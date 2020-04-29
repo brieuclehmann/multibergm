@@ -6,11 +6,14 @@
 \alias{multibergm.multibergm}
 \title{Fit multibergm to multiple networks}
 \usage{
-multibergm(object, mainIters = 1000,
-  control = control_multibergm(formula))
+multibergm(object, mainIters = 1000, control = control_multibergm(formula))
 
-\method{multibergm}{formula}(object, constraints = ~.,
-  mainIters = 1000, control = control_multibergm(formula, constraints))
+\method{multibergm}{formula}(
+  object,
+  constraints = ~.,
+  mainIters = 1000,
+  control = control_multibergm(formula, constraints)
+)
 
 \method{multibergm}{multibergm}(object, mainIters = 1000)
 }

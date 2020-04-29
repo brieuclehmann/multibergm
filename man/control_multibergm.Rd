@@ -4,8 +4,15 @@
 \alias{control_multibergm}
 \title{Set multibergm options}
 \usage{
-control_multibergm(formula, constraints = ~., priors = NULL,
-  init = NULL, proposal = NULL, auxIters = 10000, nBatches = 1)
+control_multibergm(
+  formula,
+  constraints = ~.,
+  priors = NULL,
+  init = NULL,
+  proposal = NULL,
+  auxIters = 10000,
+  nBatches = 1
+)
 }
 \arguments{
 \item{formula}{An \R \code{\link{formula}} object, of the form

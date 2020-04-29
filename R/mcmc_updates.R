@@ -57,16 +57,20 @@ exchange_update <- function(curr, prop, delta, priorCov,
 
 mean_update <- function(obsData, obsCov, priorMean, priorCov) {
 
-  # Return priorMean if this level of hierarchy is fixed
-  if (all(priorCov == 0))
-    return(priorMean)
-
-  # Else, perform Gibbs update from conditional posterior (normal)
-  nObs <- dim(obsData)[1]
-
-  postCov  <- solve(solve(priorCov) + nObs * solve(obsCov))
-  postMean <- postCov %*% ((solve(priorCov) %*% priorMean) +
-                             (nObs * (solve(obsCov) %*% colMeans(obsData))))
+  if (all(priorCov == 0)) {
+    
+    postCov <- priorCov
+    postMean <- priorMean
+    
+  } else {
+    
+    nObs <- dim(obsData)[1]
+    
+    postCov  <- solve(solve(priorCov) + nObs*solve(obsCov))
+    postMean <- postCov %*% ((solve(priorCov) %*% priorMean) +
+                               (nObs * (solve(obsCov) %*% colMeans(obsData))))
+    
+  }
 
   rmvnorm(1, postMean, postCov)[1, ]
 }

@@ -4,8 +4,7 @@
 \alias{plot.multibergm}
 \title{Plot BERGM posterior output}
 \usage{
-\method{plot}{multibergm}(object, param = "muPop", burnIn = 0,
-  thin = 1)
+\method{plot}{multibergm}(object, param = "muPop", burnIn = 0, thin = 1)
 }
 \arguments{
 \item{object}{A \link{multibergm} object}

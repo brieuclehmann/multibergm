@@ -8,13 +8,25 @@
 \alias{ergm_wrapper}
 \title{Internal functions for MCMC updates}
 \usage{
-exchange_update(curr, prop, delta, priorCov, priorMean = NULL,
-  netLabels = NULL)
+exchange_update(
+  curr,
+  prop,
+  delta,
+  priorCov,
+  priorMean = NULL,
+  netLabels = NULL
+)
 
 mean_update(obsData, obsCov, priorMean, priorCov)
 
-cov_update(obsData, priorDf, priorScale, obsMean, dataLabels = NULL,
-  currCov = NULL)
+cov_update(
+  obsData,
+  priorDf,
+  priorScale,
+  obsMean,
+  dataLabels = NULL,
+  currCov = NULL
+)
 
 ergm_wrapper(coefs, control)
 }

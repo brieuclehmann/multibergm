@@ -4,8 +4,14 @@
 \alias{gof.multibergm}
 \title{Goodness-of-fit diagnostics for multibergm}
 \usage{
-\method{gof}{multibergm}(object, coefs = NULL, sampleSize = 100,
-  auxIters = 1.5 * object$control$auxIters, burnIn = 0, thin = 1)
+\method{gof}{multibergm}(
+  object,
+  coefs = NULL,
+  sampleSize = 100,
+  auxIters = 1.5 * object$control$auxIters,
+  burnIn = 0,
+  thin = 1
+)
 }
 \arguments{
 \item{object}{A \link{multibergm} object}
