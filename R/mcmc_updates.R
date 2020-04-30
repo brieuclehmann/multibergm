@@ -55,24 +55,24 @@ exchange_update <- function(curr, prop, delta, priorCov,
 #' @describeIn mcmc_updates Gibbs update of a mean parameter
 #' @importFrom mvtnorm rmvnorm
 
-mean_update <- function(obsData, obsCov, priorMean, priorCov) {
+mean_update <- function(obs_data, obs_cov, prior_mean, prior_cov) {
 
-  if (all(priorCov == 0)) {
+  if (all(prior_cov == 0)) {
     
-    postCov <- priorCov
-    postMean <- priorMean
+    post_cov <- prior_cov
+    post_mean <- prior_mean
     
   } else {
     
-    nObs <- dim(obsData)[1]
+    n <- dim(obs_data)[1]
     
-    postCov  <- solve(solve(priorCov) + nObs*solve(obsCov))
-    postMean <- postCov %*% ((solve(priorCov) %*% priorMean) +
-                               (nObs * (solve(obsCov) %*% colMeans(obsData))))
+    post_cov  <- solve(solve(prior_cov) + n*solve(obs_cov))
+    post_mean <- post_cov %*% ((solve(prior_cov) %*% prior_mean) +
+                               (n*(solve(obs_cov) %*% colMeans(obs_data))))
     
   }
 
-  rmvnorm(1, postMean, postCov)[1, ]
+  rmvnorm(1, post_mean, post_cov)[1, ]
 }
 
 #' @param priorDf Prior degrees of freedom in Inverse-Wishart

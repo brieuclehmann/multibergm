@@ -41,9 +41,13 @@
 #' @import ergm
 #' @importFrom stats terms
 #' @export
-control_multibergm <- function(formula, constraints = ~. ,priors = NULL,
-                               init = NULL, proposal = NULL,
-                               auxIters = 10000, nBatches = 1) {
+control_multibergm <- function(formula, 
+                               constraints = ~. ,
+                               priors      = NULL,
+                               init        = NULL, 
+                               proposal    = NULL,
+                               auxIters    = 10000, 
+                               nBatches    = 1) {
 
   networks <- statnet.common::eval_lhs.formula(formula)
 
