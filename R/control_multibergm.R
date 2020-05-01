@@ -180,8 +180,8 @@ get_labels <- function(networks){
   group <- unlist(sapply(networks, get.network.attribute, "group"))
 
   if (length(group) == 0){
-    warning(strwrap("Group network assignments have not been specified -
-            assuming each network belongs to the same group."))
+#    warning(strwrap("Group network assignments have not been specified -
+#            assuming each network belongs to the same group."))
     group <- rep(1, nNetworks)
   }
 

@@ -16,37 +16,35 @@
 #' @importFrom mvtnorm dmvnorm
 #' @importFrom stats runif
 
-exchange_update <- function(curr, prop, delta, priorCov,
-                            priorMean = NULL, netLabels = NULL) {
+exchange_update <- function(curr, 
+                            prop, 
+                            delta, 
+                            prior_cov,
+                            prior_mean = double(ncol(curr)), 
+                            labels = seq_len(nrow(curr))) {
 
-  # Skip update if proposal the same as current,
-  # this occurs under some parameterisations
-  if (all(curr == prop))
+  if (all(curr == prop)) {
     return(curr)
+  }
 
   if (is.vector(curr)) curr <- matrix(curr, nrow=1)
   if (is.vector(prop)) prop <- matrix(prop, nrow=1)
 
-  nObs     <- dim(prop)[1]
-  paramNew <- curr
+  n   <- nrow(curr)
+  new <- curr
+  
+  for (i in seq_len(n)) {
+    pr_prop <- dmvnorm(prop[i, ], prior_mean, prior_cov, log = TRUE)
+    pr_curr <- dmvnorm(curr[i, ], prior_mean, prior_cov, log = TRUE)
 
-  if (is.null(netLabels))
-    netLabels <- 1:nObs
-  if (is.null(priorMean))
-    priorMean <- rep(0, dim(curr)[2])
-
-  for (i in 1:nObs) {
-    prProp <- dmvnorm(prop[i, ], priorMean, priorCov, log=TRUE)
-    prCurr <- dmvnorm(curr[i, ], priorMean, priorCov, log=TRUE)
-
-    thisDelta <- colSums(delta[which(netLabels == i), , drop = FALSE])
-    beta      <- sum((curr[i, ] - prop[i, ]) * thisDelta) + prProp - prCurr
+    this_delta <- colSums(delta[which(labels == i), , drop = FALSE])
+    beta      <- sum((curr[i, ] - prop[i, ]) * this_delta) + pr_prop - pr_curr
 
     if (beta >= log(runif(1)))
-      paramNew[i, ] <- prop[i, ]
+      new[i, ] <- prop[i, ]
   }
 
-  return(paramNew)
+  new
 }
 
 #' @param obsData Matrix of observed data
@@ -123,12 +121,14 @@ cov_update <- function(obsData, priorDf, priorScale, obsMean,
 #' @importFrom foreach foreach
 ergm_wrapper <- function(coefs, control) {
 
-  nNets <- dim(coefs)[1]
-  seeds <- rngtools::RNGseq(nNets)
+  n_nets <- dim(coefs)[1]
+  seeds  <- rngtools::RNGseq(n_nets)
 
   # Parallel call to ergm_MCMC_slave
-  delta <- foreach(n = 1:nNets, r = seeds,
-                   .combine = rbind, .packages = "ergm") %dopar% {
+  delta <- foreach(n = seq_len(n_nets), 
+                   r = seeds,
+                   .combine = rbind, 
+                   .packages = "ergm") %dopar% {
 
                      rngtools::setRNG(r)
                      ergm_MCMC_slave(control$Clists[[n]],
