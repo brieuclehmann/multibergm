@@ -83,33 +83,33 @@ mean_update <- function(obs_data, obs_cov, prior_mean, prior_cov) {
 #'
 #' @importFrom MCMCpack riwish
 
-cov_update <- function(obsData, priorDf, priorScale, obsMean,
-                       dataLabels = NULL, currCov = NULL) {
+cov_update <- function(obs_data, 
+                       prior_df, 
+                       prior_scale, 
+                       obs_mean,
+                       labels = rep(1, nrow(obs_data)), 
+                       curr_cov = NULL) {
 
-  # Return current covariance if this level of hierarchy is fixed
-  if (all(priorScale == 0))
-    return(currCov)
-
-  # Else perform Gibbs update from conditional posterior (inverse-Wishart)
-  nObs <- dim(obsData)[1]
-  if (is.null(dataLabels))
-    dataLabels <- rep(1, nObs)
-
-  if (!is.matrix(obsMean))
-    obsMean <- matrix(obsMean, nrow = 1)
-
-  nGroups <- dim(obsMean)[1]
-  pairwiseDev <- 0
-  for (g in 1:nGroups) {
-    ind <- which(dataLabels == g)
-    pairwiseDev <- pairwiseDev + crossprod(sweep(obsData[ind, , drop = F],
-                                                 2, obsMean[g, ]))
+  if (all(prior_scale == 0)) {
+    return(curr_cov)
   }
 
-  postDf    <- priorDf + nObs
-  postScale <- priorScale + pairwiseDev
+  n <- nrow(obs_data)
 
-  riwish(postDf, postScale)
+  if (!is.matrix(obs_mean))
+    obs_mean <- matrix(obs_mean, nrow = 1)
+
+  pairwise_dev <- 0
+  for (g in seq_len(nrow(obs_mean))) {
+    ind <- which(labels == g)
+    pairwise_dev <- pairwise_dev + crossprod(sweep(obs_data[ind, , drop = F],
+                                                 2, obs_mean[g, ]))
+  }
+
+  post_df    <- prior_df + n
+  post_scale <- prior_scale + pairwise_dev
+
+  riwish(post_df, post_scale)
 }
 
 #' @param coefs Matrix of coefficients to simulate ERGs from
