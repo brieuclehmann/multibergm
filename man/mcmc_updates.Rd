@@ -3,7 +3,6 @@
 \name{mcmc_updates}
 \alias{mcmc_updates}
 \alias{exchange_update}
-\alias{exch_update_internal}
 \alias{mean_update}
 \alias{cov_update}
 \alias{ergm_wrapper}
@@ -14,21 +13,19 @@ exchange_update(
   prop,
   delta,
   prior_cov,
-  prior_mean = NULL,
-  net_labels = NULL
+  prior_mean = double(ncol(curr)),
+  labels = seq_len(nrow(curr))
 )
-
-exch_update_internal(curr, prop, delta, prior_mean, prior_cov)
 
 mean_update(obs_data, obs_cov, prior_mean, prior_cov)
 
 cov_update(
-  obsData,
-  priorDf,
-  priorScale,
-  obsMean,
-  dataLabels = NULL,
-  currCov = NULL
+  obs_data,
+  prior_df,
+  prior_scale,
+  obs_mean,
+  labels = rep(1, nrow(obs_data)),
+  curr_cov = NULL
 )
 
 ergm_wrapper(coefs, control)
@@ -40,18 +37,6 @@ ergm_wrapper(coefs, control)
 
 \item{delta}{Change in summary statistics as produced by
 \code{\link{ergm_wrapper}}}
-
-\item{obsData}{Matrix of observed data}
-
-\item{priorDf}{Prior degrees of freedom in Inverse-Wishart}
-
-\item{priorScale}{Prior scale matrix in Inverse-Wishart}
-
-\item{obsMean}{Fixed (known) mean of observed data}
-
-\item{dataLabels}{Labels to associate each observation with a grouping}
-
-\item{currCov}{Current value of covariance parameter}
 
 \item{coefs}{Matrix of coefficients to simulate ERGs from}
 
@@ -65,15 +50,25 @@ containing settings for the ERGM simulations}
 \item{netLabels}{Labels specifying which networks to associate with
 each row of the the parameter matrices}
 
+\item{obsData}{Matrix of observed data}
+
 \item{obsCov}{Fixed (known) covariance of observed data}
+
+\item{priorDf}{Prior degrees of freedom in Inverse-Wishart}
+
+\item{priorScale}{Prior scale matrix in Inverse-Wishart}
+
+\item{obsMean}{Fixed (known) mean of observed data}
+
+\item{dataLabels}{Labels to associate each observation with a grouping}
+
+\item{currCov}{Current value of covariance parameter}
 }
 \description{
 Functions used internally by to perform Gibbs or exchange updates.
 }
 \section{Functions}{
 \itemize{
-\item \code{exch_update_internal}: Internal exchange_update function
-
 \item \code{mean_update}: Gibbs update of a mean parameter
 
 \item \code{cov_update}: Gibbs update of a covariance parameter

@@ -45,7 +45,8 @@ multibergm <- function(object,
 multibergm.formula <- function(object,
                                constraints = ~.,
                                mainIters = 1000,
-                               control = control_multibergm(formula, constraints)) {
+                               control = control_multibergm(formula, 
+                                                            constraints)) {
 
   startTime <- Sys.time()
 

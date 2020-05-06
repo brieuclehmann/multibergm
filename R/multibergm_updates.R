@@ -48,8 +48,8 @@ singleGroup_update <- function(curr, control){
   deltaMu   <- ergm_wrapper(coefs, control)
   nxt$muPop <- exchange_update(muPopMid, muPopProp, deltaMu,
                                prior$muPop$cov,
-                               priorMean = prior$muPop$mean,
-                               netLabels = groupLabel)
+                               prior_mean = prior$muPop$mean,
+                               labels = groupLabel)
 
   # Track acceptance counts
   accepts$theta <- apply(thetaMid != curr$theta, 1, any)
@@ -129,8 +129,8 @@ multiGroup_update <- function(curr, control){
 
   deltaMu     <- ergm_wrapper(coefs, control)
   nxt$muGroup <- exchange_update(muGroupMid, muGroupProp, deltaMu,
-                                 nxt$covMuGroup, priorMean = nxt$muPop,
-                                 netLabels = groupLabel)
+                                 nxt$covMuGroup, prior_mean = nxt$muPop,
+                                 labels = groupLabel)
 
   # Track acceptance counts
   accepts$theta <- apply(thetaMid != curr$theta, 1, any)
