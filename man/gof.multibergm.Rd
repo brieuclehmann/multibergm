@@ -7,10 +7,10 @@
 \method{gof}{multibergm}(
   object,
   coefs = NULL,
-  sampleSize = 100,
-  auxIters = 1.5 * object$control$auxIters,
-  burnIn = 0,
-  thin = 1
+  sample_size = 100,
+  aux_iters = 1.5 * object$control$aux_iters,
+  burn_in = 0L,
+  thin = 1L
 )
 }
 \arguments{
@@ -20,15 +20,12 @@
 simulation. The default is to use the posterior samples of the
 population-level parameter.}
 
+\item{thin}{Amount of thinning to apply to the posterior samples}
+
 \item{sampleSize}{Number of networks to be simulated and compared to the
 observed networks.}
 
 \item{auxIters}{Number of iterations used for network simulation.}
-
-\item{burnIn}{Amount of burn-in to remove from the start of posterior
-samples (pre-thinning)}
-
-\item{thin}{Amount of thinning to apply to the posterior samples}
 }
 \value{
 Outputs bar plots (for observed networks) overlayed with ribbons

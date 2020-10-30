@@ -13,14 +13,12 @@
 #' @return A list of the updated values of the model parameters and the
 #'   acceptance counts for the exchange updates.
 #' @importFrom mvtnorm rmvnorm
-singleGroup_update <- function(curr, control){
+singleGroup_update <- function(curr, prior, groups, control){
 
-  prior      <- control$prior
   proposal   <- control$proposal
-  groupLabel <- control$groupLabel
 
   # Preallocate parameter values for next iteration
-  nxt     <- lapply(curr, function(x) array(NA, dim(x)))
+  nxt     <- curr
   accepts <- list()
 
   # First, update network-level covariance parameter
@@ -49,11 +47,11 @@ singleGroup_update <- function(curr, control){
   nxt$muPop <- exchange_update(muPopMid, muPopProp, deltaMu,
                                prior$muPop$cov,
                                prior_mean = prior$muPop$mean,
-                               labels = groupLabel)
+                               labels = groups)
 
   # Track acceptance counts
   accepts$theta <- apply(thetaMid != curr$theta, 1, any)
-  accepts$mu    <- apply(nxt$muPop != muPopMid, 1, any)
+  accepts$mu    <- any(nxt$muPop != muPopMid)
 
   list(params = nxt, accepts = accepts)
 }
@@ -76,12 +74,10 @@ singleGroup_update <- function(curr, control){
 #'   acceptance counts for the exchange updates.
 
 #' @importFrom mvtnorm rmvnorm
-multiGroup_update <- function(curr, control){
+multiGroup_update <- function(curr, prior, groups, control){
 
-  prior      <- control$prior
   proposal   <- control$proposal
-  groupLabel <- control$groupLabel
-  nGroups    <- dim(curr$muGroup)[1]
+  n_groups    <- dim(curr$muGroup)[1]
 
   # Preallocate parameter values for next iteration
   nxt     <- lapply(curr, function(x) array(NA, dim(x)))
@@ -103,15 +99,15 @@ multiGroup_update <- function(curr, control){
   thetaProp  <- rmvnorm(dim(curr$theta)[1], sigma=proposal$theta) + curr$theta
   coefs      <- array(NA, dim(thetaProp))
   for (n in 1:dim(coefs)[1])
-    coefs[n, ] <- thetaProp[n, ] + curr$muGroup[groupLabel[n], ]
+    coefs[n, ] <- thetaProp[n, ] + curr$muGroup[groups[n], ]
 
   deltaTheta <- ergm_wrapper(coefs, control)
   thetaMid   <- exchange_update(curr$theta, thetaProp, deltaTheta, nxt$covTheta)
 
   # Update group-level mean parameters in centered parameterisation
   muGroupMid <- array(NA, dim(curr$muGroup))
-  for (g in 1:nGroups){
-    nws              <- which(groupLabel == g)
+  for (g in 1:n_groups){
+    nws              <- which(groups == g)
     muGroupCurr      <- sweep(thetaMid[nws, ], 2, curr$muGroup[g, ], "+")
     muGroupMid[g, ]  <- mean_update(muGroupCurr, nxt$covTheta,
                                     nxt$muPop, nxt$covMuGroup)
@@ -122,15 +118,15 @@ multiGroup_update <- function(curr, control){
   }
 
   # Update group-level parameters in non-centered parameterisation
-  muGroupProp <- rmvnorm(nGroups, sigma = proposal$mu) + muGroupMid
+  muGroupProp <- rmvnorm(n_groups, sigma = proposal$mu) + muGroupMid
   coefs       <- array(NA, dim(nxt$theta))
   for (n in 1:dim(coefs)[1])
-    coefs[n, ] <- nxt$theta[n, ] + muGroupProp[groupLabel[n], ]
+    coefs[n, ] <- nxt$theta[n, ] + muGroupProp[groups[n], ]
 
   deltaMu     <- ergm_wrapper(coefs, control)
   nxt$muGroup <- exchange_update(muGroupMid, muGroupProp, deltaMu,
                                  nxt$covMuGroup, prior_mean = nxt$muPop,
-                                 labels = groupLabel)
+                                 labels = groups)
 
   # Track acceptance counts
   accepts$theta <- apply(thetaMid != curr$theta, 1, any)

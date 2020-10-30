@@ -4,7 +4,7 @@
 \alias{multiGroup_update}
 \title{MCMC update for multiple-group multi-BERGM}
 \usage{
-multiGroup_update(curr, control)
+multiGroup_update(curr, prior, groups, control)
 }
 \arguments{
 \item{curr}{A list of the current values of the model parameters}

@@ -9,15 +9,17 @@
 #'
 #' @export
 print.multibergm <- function(x, ...){
-  nGroups <- length(unique(x$control$groupLabel))
-  nNets   <- length(x$networks)
+  networks <- statnet.common::eval_lhs.formula(x$formula)
+  
+  n_groups <- length(unique(x$control$groupLabel))
+  n_nets   <- length(networks)
 
-  s_net <- ifelse(nNets > 1, "s", "")
-  s_group <- ifelse(nGroups > 1, "s", "")
-  cat("A multibergm fit of ", nNets, " network", s_net, " in ", 
-      nGroups, " group", s_group, ".\n", sep = "")
+  s_net <- ifelse(n_nets > 1, "s", "")
+  s_group <- ifelse(n_groups > 1, "s", "")
+  cat("A multibergm fit of ", n_nets, " network", s_net, " in ", 
+      n_groups, " group", s_group, ".\n", sep = "")
   cat("\nModel formula:\n")
-  print(x$formula, ...)
+  print(x$formula, showEnv = FALSE, ...)
   cat("\nConstraints:\n")
   print(x$constraints, showEnv = FALSE, ...)
   

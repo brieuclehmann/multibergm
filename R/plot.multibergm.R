@@ -11,15 +11,22 @@
 #' @export
 plot.multibergm <- function(object,
                             param = "muPop",
-                            burnIn = 0,
-                            thin = 1){
-
+                            burn_in = 0L,
+                            thin = 1L){
+  thin    <- as.integer(thin)
+  burn_in <- as.integer(burn_in)
+  
   # Remove burnIn iterations and apply thinning (default: no thinning)
-  postIters      <- seq(burnIn + 1, object$mainIters, thin)
-  object$params  <- lapply(object$params,
-                           function(x) abind::asub(x, postIters, 1))
-
+  post_iters      <- seq(burn_in + 1L, object$main_iters, thin)
+  object$params  <- subset(object$params, iterations = post_iters)
   output <- get(param, object$params)
+  output <- abind::adrop(unclass(output), 1)
+  
+  model_terms <- object$control$model$coef.names
+  n_dim <- length(dim(output))
+  dim_names <- vector("list", n_dim)
+  dim_names[[n_dim]] <- model_terms
+  dimnames(output) <- dim_names
 
   densityFig <- densityplot(output)
   traceFig <- traceplot(output)
@@ -35,10 +42,10 @@ traceplot <- function(output) {
 
   varNames <- c("Iteration", "Stat")
 
-  trace_df <- melt(output, varnames = varNames, value.name = "Posterior")
+  trace_df <- melt(output, varnames = varNames, value.name = "Estimate")
   trace_df$Iteration <- as.integer(trace_df$Iteration)
 
-  ggplot(trace_df, aes(x = Iteration, y = Posterior)) +
+  ggplot(trace_df, aes(x = Iteration, y = Estimate)) +
     geom_line(colour = "black") +
     facet_wrap("Stat", ncol = 1, scales = "free_y")
 }
@@ -49,9 +56,9 @@ traceplot <- function(output) {
 densityplot <- function(output) {
 
   varNames <- c("Iteration", "Stat")
-  out_df <- melt(output, varnames = varNames, value.name = "Posterior")
+  out_df <- melt(output, varnames = varNames, value.name = "Estimate")
 
-  ggplot(out_df, aes(x = Posterior)) +
+  ggplot(out_df, aes(x = Estimate)) +
     geom_density(fill = "black", alpha = 0.5, colour = NA) +
     facet_wrap("Stat", ncol = 1, scales = "free") +
     ylab("Density")
@@ -63,10 +70,10 @@ densityplot <- function(output) {
 groupDensityplot <- function(output) {
 
   varNames <- c("Iteration", "Group", "Stat")
-  out_df <- melt(output, varnames = varNames, value.name = "Posterior")
+  out_df <- melt(output, varnames = varNames, value.name = "Estimate")
   out_df$Group <- factor(out_df$Group)
 
-  ggplot(out_df, aes(x = Posterior)) +
+  ggplot(out_df, aes(x = Estimate)) +
     geom_density(aes(fill = Group), alpha = 0.5, colour = NA) +
     facet_wrap("Stat", ncol = 1, scales = "free") +
     ylab("Density")

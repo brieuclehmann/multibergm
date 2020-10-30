@@ -6,16 +6,19 @@
 \alias{multibergm.multibergm}
 \title{Fit multibergm to multiple networks}
 \usage{
-multibergm(object, mainIters = 1000, control = control_multibergm(formula))
+multibergm(object, ...)
 
 \method{multibergm}{formula}(
   object,
   constraints = ~.,
-  mainIters = 1000,
-  control = control_multibergm(formula, constraints)
+  groups = NULL,
+  main_iters = 1000L,
+  prior = set_priors(object, groups),
+  init = set_init(object, prior, groups),
+  control = control_multibergm(object, constraints)
 )
 
-\method{multibergm}{multibergm}(object, mainIters = 1000)
+\method{multibergm}{multibergm}(object, main_iters = 1000)
 }
 \arguments{
 \item{object}{A multibergm object, or a \R \code{\link{formula}} object,
@@ -23,12 +26,12 @@ of the form \code{y ~ <model terms>}, where \code{y} is a
 \code{\link[network]{network}} object or a
 \code{\link[ergm]{network.list}} object.}
 
-\item{mainIters}{Number of (outer) MCMC iterations}
-
-\item{control}{A list of parameters set by \code{\link{control_multibergm}}}
-
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
+
+\item{main_iters}{Number of (outer) MCMC iterations}
+
+\item{control}{A list of parameters set by \code{\link{control_multibergm}}}
 }
 \value{
 A list containing the following elements:
@@ -36,7 +39,7 @@ A list containing the following elements:
     \item \code{networks} - to which the model was fit
     \item \code{formula} - specifiying the ERGM
     \item \code{constraints} - used to fix any summary statistics
-    \item \code{mainIters} - the number of MCMC iterations used
+    \item \code{main_iters} - the number of MCMC iterations used
     \item \code{control} parameters used to fit the model
     \item \code{params} - list containing MCMC output for each variable
     \item \code{accepts} - list containing acceptance counts at each iteration

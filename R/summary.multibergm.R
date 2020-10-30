@@ -15,49 +15,51 @@
 #' @export
 summary.multibergm <- function(object,
                                param = "muPop",
-                               thin = 1,
-                               burnIn = 0) {
+                               thin = 1L,
+                               burn_in = 0L) {
+  thin    <- as.integer(thin)
+  burn_in <- as.integer(burn_in)
+  
+  # Remove burn_in and apply thinning
+  post_iters      <- seq(burn_in + 1L, object$main_iters, thin)
+  output  <- get(param, object$params)
+  output  <- subset(output, iterations = post_iters)
+  
+  model_terms <- object$control$model$coef.names
+  n_terms     <- length(attr(terms(object$formula), "term.labels"))
+  n_groups   <- length(unique(object$groups))
 
-  # Remove burnIn iterations and apply thinning (default: no thinning)
-  postIters      <- seq(burnIn + 1, object$mainIters, thin)
-  object$params  <- lapply(object$params,
-                          function(x) abind::asub(x, postIters, 1))
-
-  modelTerms <- object$control$model$coef.names
-  nTerms     <- length(attr(terms(object$formula), "term.labels"))
-  output     <- get(param, object$params)
-
-  cat("\n", "Posterior Density Estimate for Model: \ny ~", paste(object$formula[3]),
-      "\n", "\n")
+  cat("\n", "Posterior Density Estimate for Model: \ny ~", 
+      paste(object$formula[3]), "\n", "\n")
 
   if (param == "muPop") {
-    FFmu   <- coda::mcmc(output, start=burnIn+1, thin = thin)
+    FFmu   <- mcmcr::as.mcmc(output, start = burn_in + 1, thin = thin)
 
     table1 <- summary(FFmu)$statistics
-    rnames <- paste0("mu", 1:nTerms, " (", modelTerms, ")")
-    table1 <- matrix(table1, nTerms,
-                     dimnames = list(rnames, colnames(table1)))
+    rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ")")
+    table1 <- matrix(table1, n_terms,
+                     dimnames = list(rnames, names(table1)))
 
     table2 <- summary(FFmu)$quantiles
-    table2 <- matrix(table2, nTerms,
-                     dimnames = list(rnames, colnames(table2)))
+    table2 <- matrix(table2, n_terms,
+                     dimnames = list(rnames, names(table2)))
 
     print(table1, digits = 4)
     cat("\n")
     print(table2, digits = 4)
 
   } else {
-    for (g in 1:object$init$nGroups) {
-      FFmu   <- coda::mcmc(output, start=burnIn+1, thin = thin)
+    for (g in 1:object$init$n_groups) {
+      FFmu   <- coda::mcmc(output, start = burn_in + 1, thin = thin)
 
       table1 <- summary(FFmu)$statistics
-      rnames <- paste0("mu", 1:nTerms, " (", modelTerms, ", G",
-                       rep(g, each = nTerms), ")")
-      table1 <- matrix(table1, object$init$nStats,
+      rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ", G",
+                       rep(g, each = n_terms), ")")
+      table1 <- matrix(table1, n_terms, 
                        dimnames = list(rnames, colnames(table1)))
 
       table2 <- summary(FFmu)$quantiles
-      table2 <- matrix(table2, object$init$nStats,
+      table2 <- matrix(table2, n_terms,
                        dimnames = list(rnames, colnames(table2)))
 
       print(table1, digits = 4)
@@ -68,13 +70,13 @@ summary.multibergm <- function(object,
 
   # Print acceptance rates
   cat("\n Theta acceptance rate: \n")
-  thetaAR <- colSums(object$accepts$theta)/(object$mainIters - 1)
+  thetaAR <- colSums(object$accepts$theta)/(object$main_iters - 1)
   cat(formatC(mean(thetaAR), digits = 3, format = "f"),
       " (", formatC(min(thetaAR), digits = 3, format = "f"), ", ",
       formatC(max(thetaAR), digits = 3, format = "f"), ")", sep="")
 
   cat("\n Mu acceptance rate: \n")
-  muAR <- colSums(object$accepts$mu)/(object$mainIters - 1)
+  muAR <- colSums(object$accepts$mu)/(object$main_iters - 1)
   cat(formatC(mean(muAR), digits = 3, format = "f"),
       " (", formatC(min(muAR), digits = 3, format = "f"), ", ",
       formatC(max(muAR), digits = 3, format = "f"), ") \n", sep="")

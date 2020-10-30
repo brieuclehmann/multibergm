@@ -2,16 +2,14 @@
 % Please edit documentation in R/control_multibergm.R
 \name{control_multibergm}
 \alias{control_multibergm}
-\title{Set multibergm options}
+\title{Set multibergm MCMC options}
 \usage{
 control_multibergm(
   formula,
   constraints = ~.,
-  priors = NULL,
-  init = NULL,
   proposal = NULL,
-  auxIters = 10000,
-  nBatches = 1
+  aux_iters = 1000,
+  n_batches = 1
 )
 }
 \arguments{
@@ -22,10 +20,6 @@ control_multibergm(
 
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
-
-\item{priors}{A list of prior settings.}
-
-\item{init}{A list of initial values.}
 
 \item{proposal}{A list of covariance matrices used to generate the MCMC
 proposals.}
@@ -41,8 +35,6 @@ A list containing the following control parameters:
   \itemize{
      \item \code{auxIters}: Number of internal (auxiliary) MCMC iterations
      used to simulate a network from the model
-     \item \code{prior}: A list of prior settings
-     \item \code{init}: A list of initial values
      \item \code{proposal}: A list of covariance matrices used to
      generate the MCMC proposals.
      \item \code{groupLabel}: A vector containing  group
@@ -56,8 +48,7 @@ A list containing the following control parameters:
 }
 \description{
 Auxiliary function used to specify settings controlling multibergm fitting.
-This allows the user to control various aspects of the model and fitting
-process, including prior specification, parameter initialisation, MCMC
-proposal covariance, auxiliary iterations for ERGM simulation, and number of
-cores to be used in parallel.
+This allows the user to control various aspects of the fitting algorithm, 
+including MCMC proposal covariance, auxiliary iterations for ERGM simulation,
+and number of cores to be used in parallel.
 }

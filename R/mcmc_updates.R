@@ -27,8 +27,10 @@ exchange_update <- function(curr,
     return(curr)
   }
 
-  if (is.vector(curr)) curr <- matrix(curr, nrow=1)
-  if (is.vector(prop)) prop <- matrix(prop, nrow=1)
+  d <- dim(curr)
+  
+  if (is.vector(curr)) curr <- matrix(curr, nrow = 1)
+  if (is.vector(prop)) prop <- matrix(prop, nrow = 1)
 
   n   <- nrow(curr)
   new <- curr
@@ -43,7 +45,7 @@ exchange_update <- function(curr,
     if (beta >= log(runif(1)))
       new[i, ] <- prop[i, ]
   }
-
+  dim(new) <- d
   new
 }
 

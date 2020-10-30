@@ -14,7 +14,7 @@
 #'   of the form \code{y ~ <model terms>}, where \code{y} is a
 #'   \code{\link[network]{network}} object or a
 #'   \code{\link[ergm]{network.list}} object.
-#' @param mainIters Number of (outer) MCMC iterations
+#' @param main_iters Number of (outer) MCMC iterations
 #' @param control A list of parameters set by \code{\link{control_multibergm}}
 #'
 #' @return A list containing the following elements:
@@ -22,17 +22,17 @@
 #'     \item \code{networks} - to which the model was fit
 #'     \item \code{formula} - specifiying the ERGM
 #'     \item \code{constraints} - used to fix any summary statistics
-#'     \item \code{mainIters} - the number of MCMC iterations used
+#'     \item \code{main_iters} - the number of MCMC iterations used
 #'     \item \code{control} parameters used to fit the model
 #'     \item \code{params} - list containing MCMC output for each variable
 #'     \item \code{accepts} - list containing acceptance counts at each iteration
 #'     }
 #'
 #' @export
-multibergm <- function(object,
-                       mainIters = 1000,
-                       control = control_multibergm(formula))
+multibergm <- function(object, ...) {
   UseMethod("multibergm")
+}
+
 
 #' @param constraints A one-sided formula specifying one or more constraints
 #'   on the support of the distribution of the networks being simulated.
@@ -40,27 +40,35 @@ multibergm <- function(object,
 #' @importFrom abind abind
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
+#' @importFrom mcmcr bind_iterations
 #' @describeIn multibergm S3 method for class 'formula'
 #' @export
 multibergm.formula <- function(object,
                                constraints = ~.,
-                               mainIters = 1000,
-                               control = control_multibergm(formula, 
+                               groups = NULL,
+                               main_iters = 1000L,
+                               prior = set_priors(object, groups),
+                               init = set_init(object, prior, groups),
+                               control = control_multibergm(object, 
                                                             constraints)) {
 
-  startTime <- Sys.time()
-
+  start_time <- Sys.time()
+  main_iters <- as.integer(main_iters)
   # TODO: add check for constraints
-  networks <- statnet.common::eval_lhs.formula(formula)
+  networks <- statnet.common::eval_lhs.formula(object)
+  n_networks <- length(networks)
+  
+  if (is.null(groups))
+    groups <- rep(1, n_networks)
 
   # Set up parallel options
-  nBatches <- length(control$batches)
-  if (nBatches == 1) {
+  n_batches <- length(control$batches)
+  if (n_batches == 1) {
     foreach::registerDoSEQ()
   } else {
-    if (!is.null(nodeList)) {
-      cl <- parallel::makeCluster(nodeList)
-    } else cl <- parallel::makeCluster(nBatches)
+    if (!is.null(node_list)) {
+      cl <- parallel::makeCluster(node_list)
+    } else cl <- parallel::makeCluster(n_batches)
 
     parallel::clusterEvalQ(cl, {
       library(ergm)
@@ -70,39 +78,39 @@ multibergm.formula <- function(object,
   }
 
   # Preallocate and initialise variables for MCMC
-  firstIter <- dim(control$init$theta)[1] + 1
+  first_iter <- dim(init$theta)[1] + 1
   # TODO: change this to abind::afill
-  params <- lapply(control$init,
-                   function(x) abind(x,
-                                     array(NA,
-                                           c(mainIters-firstIter+1, dim(x)[-1])),
-                                     along = 1))
+  
+  add_iters <- main_iters - first_iter + 1
+  # params <- preallocate(init, add_iters)
+  params <- init
 
   # Preallocate acceptance counts for MCMC
-  nGroups <- length(unique((control$groupLabel)))
-  accepts <- list(theta = array(0, dim(params$theta)[c(1,2)]),
-                  mu = array(0, c(mainIters, nGroups)))
+  n_groups <- length(unique(groups))
+  accepts <- list(theta = array(0, c(main_iters, n_networks)),
+                  mu = array(0, c(main_iters, n_groups)))
 
-  pb <- txtProgressBar(min = 0, max = mainIters, style = 3)
+  pb <- txtProgressBar(min = 0, max = main_iters, style = 3)
 
   # Run the MCMC
-  for (k in firstIter:mainIters) {
+  for (k in seq(first_iter, main_iters)) {
     setTxtProgressBar(pb, k)
 
-    # Get the variables from the last iteration
-    curr <- lapply(params,
-                   function(x) array(x[slice.index(x,1) == k-1], dim(x)[-1]))
+    curr <- subset(params, iterations = k - 1L)
+    curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1,2)))
 
     # Perform Gibbs update for all variables
-    if (nGroups == 1) {
-      mcmcUpdate <- singleGroup_update(curr, control)
+    if (n_groups == 1) {
+      mcmcUpdate <- singleGroup_update(curr, prior, groups, control)
     } else {
-      mcmcUpdate <- multiGroup_update(curr, control)
+      mcmcUpdate <- multiGroup_update(curr, prior, groups, control)
     }
-
+    
     # Assign values and acceptance counts for this iteration
-    for (x in names(params))
-      params[[x]][slice.index(params[[x]],1) == k] <- mcmcUpdate$params[[x]]
+    # for (x in names(params))
+    #   params[[x]][slice.index(params[[x]],1) == k] <- mcmcUpdate$params[[x]]
+    
+    params <- mcmcr::bind_iterations(params, mcmcr::as.mcmcr(mcmcUpdate$params))
 
     accepts$theta[k, ] <- mcmcUpdate$accepts$theta
     accepts$mu[k, ]    <- mcmcUpdate$accepts$mu
@@ -111,12 +119,12 @@ multibergm.formula <- function(object,
 
   close(pb)
 
-  endTime <- Sys.time()
+  end_time <- Sys.time()
 
-  out = list(networks = networks, formula = formula,
-             mainIters = mainIters, control = control,
+  out = list(networks = networks, formula = object, groups = groups,
+             main_iters = main_iters, control = control, prior = prior,
              accepts = accepts, params = params,
-             constraints = constraints, time = endTime - startTime)
+             constraints = constraints, time = end_time - start_time)
 
   class(out) <- "multibergm"
 
@@ -127,20 +135,20 @@ multibergm.formula <- function(object,
 #' @describeIn multibergm S3 method for class 'multibergm', used to continue
 #'   generating posterior samples from a previous fit
 #' @export
-multibergm.multibergm <- function(object, mainIters = 1000) {
+multibergm.multibergm <- function(object, main_iters = 1000) {
 
-    oldIters <- dim(object$params$theta)[1]
+    old_iters <- dim(object$params$theta)[1]
 
     # Pass on control parameters from previous run
     control <- control_multibergm(object$formula,
                                   priors = object$control$prior,
                                   proposal = object$control$proposal,
-                                  nBatches = length(object$control$batches),
-                                  auxIters = object$control$auxIters,
+                                  n_batches = length(object$control$batches),
+                                  aux_iters = object$control$aux_iters,
                                   init = object$params)
 
-    newIters <- mainIters + oldIters
+    new_iters <- main_iters + old_iters
 
     multibergm.formula(object$formula, object$constraints,
-                       newIters, control)
+                       new_iters, control)
 }
