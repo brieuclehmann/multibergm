@@ -25,5 +25,5 @@ test_that("exchange_update() returns correct dimension", {
                c(n, p))
   expect_equal(dim(exchange_update(curr[1, ], prop[1, ], 
                                    delta[1, ,drop = FALSE], prior_cov)), 
-               c(1, p))
+               NULL)
 })
