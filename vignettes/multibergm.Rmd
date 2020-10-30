@@ -5,11 +5,12 @@ output:
   rmarkdown::html_vignette:
     toc: true
     number_sections: true
-date: "6th April, 2020"
+date: "1st November, 2020"
 vignette: >
-  %\VignetteIndexEntry{multibergm}
+  %\VignetteIndexEntry{Introduction to multibergm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: multibergm.bib
 ---
 
 ```{r, include = FALSE}
@@ -17,6 +18,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
 # Getting multibergm
@@ -25,7 +27,7 @@ The **multibergm** package can be installed from github and loaded into R using
 the following commands:
 
 ```{r setup, message = FALSE}
-devtools::install_github("brieuclehmann/multibergm")
+#devtools::install_github("brieuclehmann/multibergm")
 library(multibergm)
 ```
 
@@ -40,7 +42,8 @@ of topological features of the network, such as the number of edges and subgraph
 counts.
 
 **multibergm** is built on and inspired by the **ergm** R package, and uses the 
-same syntax to specify models. For a great introduction to the **ergm** package,
+same syntax to specify models. The rest of this tutorial will assume some 
+familiarity with ERGMs. For an introduction to the **ergm** package,
 see the following vignette:
 
 ```{r ergm-vignette, eval = FALSE}
@@ -49,31 +52,116 @@ vignette("ergm")
 
 # Loading data
 
-To get started with some network data, the **multibergm** package includes some 
-synthetic networks. We'll use this data to demonstrate the functionality of 
-**multibergm**. You can load these by entering the following commands.
+To get started with some network data, the **multibergm** package includes a
+social network dataset from David Krackhardt's study on cognitive social
+structures [@Krackhardt1987]. The dataset consists of a set of friendship 
+networks between 21 managers of a high-tech firm. 
 
-```{r ergm-vignette, eval = FALSE}
-vignette("ergm")
+We'll use this data to demonstrate the functionality of **multibergm**. You can 
+load these by entering the following command.
+
+```{r load}
+data(krackfr)
 ```
 
-The package also provides a utility function to create networks from correlation 
-matrices. 
+This loads a list consisting of two elements. The first element 
+`krackfr$networks` contains a list of 21 friendship networks, each corresponding
+to the perceived network of one of the managers. The second element 
+`krackfr$self` consists of a single network with edges corresponding to 
+self-identified friendships. You can inspect these networks using `plot`. 
+Here is a plot of the self-identified friendship network:
 
-Example data (FIND SOME... OR SIMULATE?)
+<!-- # ```{r plot_net} -->
+<!-- # plot(krackfr$self) -->
+<!-- # ``` -->
 
 # The multibergm framework
 
-Describe the hierarchical framework
+The purpose of this package is to fit populations of networks using exponential
+random graph models. To do so, we use a Bayesian hierarchical model.
 
-# Model initialisation
+```{r}
+knitr::include_graphics("diagram.pdf") 
+```
 
-Priors, initial values, hyperparameters etc.
+We model each individual network $\pmb{Y}^{(i)}$ as an exponential random graph with model parameter $\theta^{(i)}$. Importantly, each individual ERGM must consist of the same set of summary statistics $s(\cdot)$. The probability mass function of each network can then be written
+\begin{equation}
+\pi(\pmb{y}^{(i)}|\theta^{(i)}) = \dfrac{\exp\left\lbrace\theta^{(i)T}s(\pmb{y}^{(i)})\right\rbrace}{Z(\theta^{(i)})}, ~~~ i = 1, \dots, n.
+\end{equation}
+This specifies the data-generating process for each individual network. To obtain a joint distribution for the set of networks, we assume that, conditional on their respective individual-level parameters, the $\pmb{Y}^{(i)}$ are independent. Thus, the sampling distribution for the set of networks $\pmb{Y}$ is simply the product of the individual probability mass functions:
+\begin{equation}
+\begin{split}
+\pi(\pmb{y}|\pmb{\theta}) &= \prod_{i=1}^n \pi(\pmb{y}^{(i)}|\theta^{(i)}) \\ \label{eq:likelihoodNets}
+& = \dfrac{\exp\left\lbrace\sum_{i=1}^n \theta^{(i)T}s(\pmb{y}^{(i)}) \right\rbrace}{\prod_{i=1}^n Z(\theta^{(i)})}.
+\end{split}
+\end{equation}
 
-# Model fitting
+To model a group of  networks we need to specify the prior distribution of the individual-level ERGM parameters $\theta^{(1)}, \dots, \theta^{(n)}$ (for individuals $1,\dots,n$). To this end, we propose a multilevel model such that $\theta^{(1)}, \dots, \theta^{(n)}$ are drawn from a common population-level Normal distribution with parameters $\phi = (\mu, \pmb{\Sigma}_{\theta})$, which are also treated as random variables. We write
+\begin{equation}
+\theta^{(i)} \sim \mathcal{N}(\mu, \pmb{\Sigma}_{\theta}), ~~ i = 1, \dots, n_j
+\end{equation} 
+for the population-level distribution. Assuming that, conditional on $\phi$, the $\theta^{(i)}$ are independent, we have
+\begin{equation} \label{eq:thetaDist}
+\pi(\pmb{\theta}|\phi) = \prod_{i=1}^{n} \pi(\theta^{(i)}|\mu, \pmb{\Sigma}_{\theta}). 
+\end{equation}
+Finally, write $\pi(\phi)$ for the (hyper)prior distribution of $\phi$. The joint distribution of $(\pmb{Y}, \pmb{\theta}, \phi)$ can be written as $\pi(\pmb{y}, \pmb{\theta}, \phi) = \pi(\pmb{y}|\pmb{\theta})\pi(\pmb{\theta}|\phi)\pi(\phi)$. 
 
-Main function goes here
+## Using `multibergm`
+
+To illustrate the functionality of `multibergm`, we begin with the simplest
+possible model for the 21 friendship networks, an Erdos-Renyi model, containing 
+only an edge term. Note that this may take a minute or so to run.
+
+```{r fit_edges, results=FALSE}
+fit1 <- multibergm(krackfr$networks ~ edges)
+```
+
+By default, this produces 1000 posterior samples from the model. We can control
+the number of samples using the `main_iters` argument. We can plot the MCMC 
+output for the group-level parameter $\mu$:
+
+```{r plot_mcmc, fig.width=6}
+plot(fit1)
+```
+
+The middle panel trace plot shows that the chain spends the first couple of 
+hundred iterations 'warming-up'. We can discard these iterations using the
+`burn_in` argument:
+
+```{r plot_mcmc_burn, fig.width=6}
+plot(fit1, burn_in = 200)
+```
+
+We can also produce some summary output of the MCMC posterior samples:
+
+```{r summary_mcmc_burn}
+summary(fit1, burn_in = 200)
+```
+
+This gives the posterior mean, standard error, and quantiles of each of the 
+parameters in the model, in this case just the edges parameter. It also provides 
+the acceptance rates for the individual-level (theta) and group-level (mu) 
+parameters - more on this below.
+
+## Prior specification
+
+# Model tuning
+
+The algorithm used to produce posterior samples is fairly computationally 
+expensive. To reduce the computational burden, we 
+
+## Initial values
+
+## Proposal size
 
 # Goodness of fit
 
-Visualisation etc.
+We can assess model adequacy via graphical goodness-of-fit. We do so by 
+simulating networks from the posterior predictive distribution. That is, we 
+select at random $m$ values from the posterior samples, then simulate a network
+from each value. By comparing these simulated networks with the observed
+networks, we can check visually whether or not the fitted model can produce 
+networks with similar characteristics to the observed data.
+
+
+# Other functionality
