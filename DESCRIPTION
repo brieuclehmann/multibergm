@@ -1,7 +1,7 @@
 Package: multibergm
 Type: Package
 Title: Bayesian exponential random graph models for multiple networks
-Version: 0.1
+Version: 0.2
 Authors@R: person("Brieuc", "Lehmann", email = "brieuc.lehmann@bdi.ox.ac.uk",
                   role = c("aut", "cre"))
 Description: Set of tools to fit multiple networks using Bayesian exponential

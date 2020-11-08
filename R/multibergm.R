@@ -8,7 +8,8 @@
 #' from a common group- or population-level distribution. An
 #' exchange-within-Gibbs algorithm is used to generate samples from the joint
 #' posterior. The group memberships, priors, and other model fitting
-#' hyperparameters are set through the \code{\link{control_multibergm}} function.
+#' hyperparameters are set through the \code{\link{control_multibergm}}
+#' function.
 #'
 #' @param object A multibergm object, or a \R \code{\link{formula}} object,
 #'   of the form \code{y ~ <model terms>}, where \code{y} is a
@@ -25,7 +26,8 @@
 #'     \item \code{main_iters} - the number of MCMC iterations used
 #'     \item \code{control} parameters used to fit the model
 #'     \item \code{params} - list containing MCMC output for each variable
-#'     \item \code{accepts} - list containing acceptance counts at each iteration
+#'     \item \code{accepts} - list containing acceptance counts at each
+#'     iteration
 #'     }
 #'
 #' @export
@@ -40,7 +42,7 @@ multibergm <- function(object, ...) {
 #' @importFrom abind abind
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
-#' @importFrom mcmcr bind_iterations
+#' @importFrom mcmcr bind_iterations is.mcmcr as.mcmcr
 #' @describeIn multibergm S3 method for class 'formula'
 #' @export
 multibergm.formula <- function(object,
@@ -49,15 +51,18 @@ multibergm.formula <- function(object,
                                main_iters = 1000L,
                                prior = set_priors(object, groups),
                                init = set_init(object, prior, groups),
-                               control = control_multibergm(object, 
+                               control = control_multibergm(object,
                                                             constraints)) {
 
   start_time <- Sys.time()
   main_iters <- as.integer(main_iters)
-  # TODO: add check for constraints
+  if (!mcmcr::is.mcmcr(init)) init <- mcmcr::as.mcmcr(init)
+  
+  # TODO: add checks for inputs
   networks <- statnet.common::eval_lhs.formula(object)
   n_networks <- length(networks)
-  
+  #prior <- set_priors(object, groups, prior)
+
   if (is.null(groups))
     groups <- rep(1, n_networks)
 
@@ -66,10 +71,7 @@ multibergm.formula <- function(object,
   if (n_batches == 1) {
     foreach::registerDoSEQ()
   } else {
-    if (!is.null(node_list)) {
-      cl <- parallel::makeCluster(node_list)
-    } else cl <- parallel::makeCluster(n_batches)
-
+    cl <- parallel::makeCluster(n_batches)
     parallel::clusterEvalQ(cl, {
       library(ergm)
     })
@@ -80,15 +82,14 @@ multibergm.formula <- function(object,
   # Preallocate and initialise variables for MCMC
   first_iter <- dim(init$theta)[1] + 1
   # TODO: change this to abind::afill
-  
+
   add_iters <- main_iters - first_iter + 1
-  # params <- preallocate(init, add_iters)
   params <- init
 
   # Preallocate acceptance counts for MCMC
   n_groups <- length(unique(groups))
   accepts <- list(theta = array(0, c(main_iters, n_networks)),
-                  mu = array(0, c(main_iters, n_groups)))
+                  mu    = array(0, c(main_iters, n_groups)))
 
   pb <- txtProgressBar(min = 0, max = main_iters, style = 3)
 
@@ -97,23 +98,20 @@ multibergm.formula <- function(object,
     setTxtProgressBar(pb, k)
 
     curr <- subset(params, iterations = k - 1L)
-    curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1,2)))
+    curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1, 2)))
 
     # Perform Gibbs update for all variables
     if (n_groups == 1) {
-      mcmcUpdate <- singleGroup_update(curr, prior, groups, control)
+      mcmc_update <- singlegroup_update(curr, prior, groups, control)
     } else {
-      mcmcUpdate <- multiGroup_update(curr, prior, groups, control)
+      mcmc_update <- multigroup_update(curr, prior, groups, control)
     }
-    
-    # Assign values and acceptance counts for this iteration
-    # for (x in names(params))
-    #   params[[x]][slice.index(params[[x]],1) == k] <- mcmcUpdate$params[[x]]
-    
-    params <- mcmcr::bind_iterations(params, mcmcr::as.mcmcr(mcmcUpdate$params))
 
-    accepts$theta[k, ] <- mcmcUpdate$accepts$theta
-    accepts$mu[k, ]    <- mcmcUpdate$accepts$mu
+    params <- mcmcr::bind_iterations(params,
+                                     mcmcr::as.mcmcr(mcmc_update$params))
+
+    accepts$theta[k, ] <- mcmc_update$accepts$theta
+    accepts$mu[k, ]    <- mcmc_update$accepts$mu
 
   }
 
@@ -121,10 +119,16 @@ multibergm.formula <- function(object,
 
   end_time <- Sys.time()
 
-  out = list(networks = networks, formula = object, groups = groups,
-             main_iters = main_iters, control = control, prior = prior,
-             accepts = accepts, params = params,
-             constraints = constraints, time = end_time - start_time)
+  out <- list(networks    = networks,
+              formula     = object,
+              groups      = groups,
+              main_iters  = main_iters,
+              control     = control,
+              prior       = prior,
+              accepts     = accepts,
+              params      = params,
+              constraints = constraints,
+              time        = end_time - start_time)
 
   class(out) <- "multibergm"
 

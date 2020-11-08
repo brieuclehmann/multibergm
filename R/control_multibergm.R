@@ -1,7 +1,7 @@
 #' Set multibergm MCMC options
 #'
 #' Auxiliary function used to specify settings controlling multibergm fitting.
-#' This allows the user to control various aspects of the fitting algorithm, 
+#' This allows the user to control various aspects of the fitting algorithm,
 #' including MCMC proposal covariance, auxiliary iterations for ERGM simulation,
 #' and number of cores to be used in parallel.
 #'
@@ -36,10 +36,10 @@
 #' @import ergm
 #' @importFrom stats terms
 #' @export
-control_multibergm <- function(formula, 
-                               constraints = ~. ,
+control_multibergm <- function(formula,
+                               constraints = ~.,
                                proposal    = NULL,
-                               aux_iters   = 1000, 
+                               aux_iters   = 1000,
                                n_batches   = 1) {
 
   networks <- statnet.common::eval_lhs.formula(formula)
@@ -67,15 +67,15 @@ control_multibergm <- function(formula,
 
   # Set up ergm parameters
   model       <- ergm_model(formula, networks[[1]])
-  Clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
-  MHproposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
+  clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
+  mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
                                networks[[1]])
 
-  list(aux_iters   = aux_iters,
-       proposal    = proposal,
-       batches     = batches,
-       model       = model,
-       Clists      = Clists,
-       MHproposals = MHproposals)
+  list(aux_iters    = aux_iters,
+       proposal     = proposal,
+       batches      = batches,
+       model        = model,
+       clists       = clists,
+       mh_proposals = mh_proposals)
 
 }

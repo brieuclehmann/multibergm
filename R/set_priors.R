@@ -1,18 +1,18 @@
 # Set priors ==================================================================
 #' Set priors for multibergm
-#' 
-#' This is a utility function to set priors for a multibergm. When not 
+#'
+#' This is a utility function to set priors for a multibergm. When not
 #' explicitly specified, set_priors() uses default (vague) priors. A
 #' validity check is also performed to ensure the compatibility of the priors
 #' with the model.
-#' 
+#'
 #' @param formula An \R \code{\link{formula}} object, of the form
 #'   \code{y ~ <model terms>}, where \code{y} is a
 #'   \code{\link[network]{network}} object or a
 #'   \code{\link[ergm]{network.list}} object.
 #' @param groups A vector of group memberships
 #' @param prior A list of explicit prior specifications.
-#' 
+#'
 #' @export
 #' @importFrom statnet.common eval_lhs.formula
 
@@ -26,27 +26,27 @@ set_priors <- function(formula, groups = NULL, prior = list()) {
   n_groups <- length(unique(groups))
 
   # Set priors for population mean parameter
-  if (is.null(prior$muPop$mean))
-    prior$muPop$mean <- rep(0, n_terms)
+  if (is.null(prior$mu_pop$mean))
+    prior$mu_pop$mean <- rep(0, n_terms)
 
-  if (is.null(prior$muPop$cov))
-    prior$muPop$cov <- diag(100, n_terms)
+  if (is.null(prior$mu_pop$cov))
+    prior$mu_pop$cov <- diag(100, n_terms)
 
   # Set priors for network-level covariance parameter
-  if (is.null(prior$covTheta$df))
-    prior$covTheta$df <- n_terms + 1
+  if (is.null(prior$cov_theta$df))
+    prior$cov_theta$df <- n_terms + 1
 
-  if (is.null(prior$covTheta$scale))
-    prior$covTheta$scale <- diag(n_terms)
+  if (is.null(prior$cov_theta$scale))
+    prior$cov_theta$scale <- diag(n_terms)
 
   if (n_groups > 1) {
     # Set priors for group-level covariance parameter
 
-    if (is.null(prior$covMuGroup$df))
-      prior$covMuGroup$df <- n_terms + 1
+    if (is.null(prior$cov_mu_group$df))
+      prior$cov_mu_group$df <- n_terms + 1
 
-    if (is.null(prior$covMuGroup$scale))
-      prior$covMuGroup$scale <- diag(n_terms)
+    if (is.null(prior$cov_mu_group$scale))
+      prior$cov_mu_group$scale <- diag(n_terms)
   }
 
   check_prior(prior, n_terms, n_groups)
@@ -55,23 +55,23 @@ set_priors <- function(formula, groups = NULL, prior = list()) {
 }
 
 #' Check validity of multibergm prior
-#' 
+#'
 #' Internal functions to check compatibility of the prior with the model.
 
 check_prior <- function(prior, n_terms, n_groups) {
 
-  check_prior_mean(prior$muPop$mean, n_terms)
+  check_prior_mean(prior$mu_pop$mean, n_terms)
 
-  check_prior_cov(prior$muPop$cov, n_terms)
+  check_prior_cov(prior$mu_pop$cov, n_terms)
 
-  check_prior_df(prior$covTheta$df, n_terms)
+  check_prior_df(prior$cov_theta$df, n_terms)
 
-  check_prior_scale(prior$covTheta$scale, n_terms)
+  check_prior_scale(prior$cov_theta$scale, n_terms)
 
   if (n_groups > 1) {
-    check_prior_df(prior$covMuGroup$df, n_terms)
+    check_prior_df(prior$cov_mu_group$df, n_terms)
 
-    check_prior_scale(prior$covMuGroup$scale, n_terms)
+    check_prior_scale(prior$cov_mu_group$scale, n_terms)
   }
 
   invisible(NULL)

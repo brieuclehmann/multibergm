@@ -8,19 +8,19 @@
 #' @param prop A vector or matrix of proposed mean parameter values
 #' @param delta Change in summary statistics as produced by
 #'   \code{\link{ergm_wrapper}}
-#' @param priorMean Prior mean of parameter
-#' @param priorCov Prior covariance of parameter
-#' @param netLabels Labels specifying which networks to associate with
+#' @param prior_mean Prior mean of parameter
+#' @param prior_cov Prior covariance of parameter
+#' @param net_labels Labels specifying which networks to associate with
 #'   each row of the the parameter matrices
 #'
 #' @importFrom mvtnorm dmvnorm
 #' @importFrom stats runif
 
-exchange_update <- function(curr, 
-                            prop, 
-                            delta, 
+exchange_update <- function(curr,
+                            prop,
+                            delta,
                             prior_cov,
-                            prior_mean = double(ncol(curr)), 
+                            prior_mean = double(ncol(curr)),
                             labels = seq_len(nrow(curr))) {
 
   if (all(curr == prop)) {
@@ -28,13 +28,13 @@ exchange_update <- function(curr,
   }
 
   d <- dim(curr)
-  
+
   if (is.vector(curr)) curr <- matrix(curr, nrow = 1)
   if (is.vector(prop)) prop <- matrix(prop, nrow = 1)
 
   n   <- nrow(curr)
   new <- curr
-  
+
   for (i in seq_len(n)) {
     pr_prop <- dmvnorm(prop[i, ], prior_mean, prior_cov, log = TRUE)
     pr_curr <- dmvnorm(curr[i, ], prior_mean, prior_cov, log = TRUE)
@@ -49,8 +49,8 @@ exchange_update <- function(curr,
   new
 }
 
-#' @param obsData Matrix of observed data
-#' @param obsCov Fixed (known) covariance of observed data
+#' @param obs_data Matrix of observed data
+#' @param obs_cov Fixed (known) covariance of observed data
 #'
 #' @describeIn mcmc_updates Gibbs update of a mean parameter
 #' @importFrom mvtnorm rmvnorm
@@ -58,38 +58,38 @@ exchange_update <- function(curr,
 mean_update <- function(obs_data, obs_cov, prior_mean, prior_cov) {
 
   if (all(prior_cov == 0)) {
-    
-    post_cov <- prior_cov
+
+    post_cov  <- prior_cov
     post_mean <- prior_mean
-    
+
   } else {
-    
+
     n <- dim(obs_data)[1]
-    
-    post_cov  <- solve(solve(prior_cov) + n*solve(obs_cov))
+
+    post_cov  <- solve(solve(prior_cov) + n * solve(obs_cov))
     post_mean <- post_cov %*% ((solve(prior_cov) %*% prior_mean) +
-                               (n*(solve(obs_cov) %*% colMeans(obs_data))))
-    
+                               (n * (solve(obs_cov) %*% colMeans(obs_data))))
+
   }
 
   rmvnorm(1, post_mean, post_cov)[1, ]
 }
 
-#' @param priorDf Prior degrees of freedom in Inverse-Wishart
-#' @param priorScale Prior scale matrix in Inverse-Wishart
-#' @param obsMean Fixed (known) mean of observed data
-#' @param dataLabels Labels to associate each observation with a grouping
-#' @param currCov Current value of covariance parameter
+#' @param prior_df Prior degrees of freedom in Inverse-Wishart
+#' @param prior_scale Prior scale matrix in Inverse-Wishart
+#' @param obs_mean Fixed (known) mean of observed data
+#' @param data_labels Labels to associate each observation with a grouping
+#' @param curr_cov Current value of covariance parameter
 #'
 #' @describeIn mcmc_updates Gibbs update of a covariance parameter
 #'
 #' @importFrom MCMCpack riwish
 
-cov_update <- function(obs_data, 
-                       prior_df, 
-                       prior_scale, 
+cov_update <- function(obs_data,
+                       prior_df,
+                       prior_scale,
                        obs_mean,
-                       labels = rep(1, nrow(obs_data)), 
+                       labels = rep(1, nrow(obs_data)),
                        curr_cov = NULL) {
 
   if (all(prior_scale == 0)) {
@@ -127,17 +127,17 @@ ergm_wrapper <- function(coefs, control) {
   seeds  <- rngtools::RNGseq(n_nets)
 
   # Parallel call to ergm_MCMC_slave
-  delta <- foreach(n = seq_len(n_nets), 
+  delta <- foreach(n = seq_len(n_nets),
                    r = seeds,
-                   .combine = rbind, 
+                   .combine = rbind,
                    .packages = "ergm") %dopar% {
 
                      rngtools::setRNG(r)
-                     ergm_MCMC_slave(control$Clists[[n]],
-                                     control$MHproposals,
+                     ergm_MCMC_slave(control$clists[[n]],
+                                     control$mh_proposals,
                                      coefs[n, ],
                                      control.simulate.formula(),
-                                     burnin = control$auxIters,
+                                     burnin = control$aux_iters,
                                      samplesize = 1,
                                      interval = 1,
                                      verbose = FALSE)$s
@@ -145,4 +145,3 @@ ergm_wrapper <- function(coefs, control) {
 
   return(delta)
 }
-
