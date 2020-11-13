@@ -28,8 +28,8 @@ the following commands:
 
 ```{r setup, message = FALSE}
 #devtools::install_github("brieuclehmann/multibergm")
-#library(multibergm)
-devtools::load_all()
+library(multibergm)
+#devtools::load_all()
 ```
 
 # Statistical network modelling with ERGMs

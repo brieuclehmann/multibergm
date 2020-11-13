@@ -38,31 +38,28 @@ ergm_wrapper(coefs, control)
 \item{delta}{Change in summary statistics as produced by
 \code{\link{ergm_wrapper}}}
 
+\item{prior_cov}{Prior covariance of parameter}
+
+\item{prior_mean}{Prior mean of parameter}
+
+\item{labels}{Labels to associate each observation with a grouping}
+
+\item{obs_data}{Matrix of observed data}
+
+\item{obs_cov}{Fixed (known) covariance of observed data}
+
+\item{prior_df}{Prior degrees of freedom in Inverse-Wishart}
+
+\item{prior_scale}{Prior scale matrix in Inverse-Wishart}
+
+\item{obs_mean}{Fixed (known) mean of observed data}
+
+\item{curr_cov}{Current value of covariance parameter}
+
 \item{coefs}{Matrix of coefficients to simulate ERGs from}
 
 \item{control}{A list of parameters set by \code{\link{control_multibergm}}
 containing settings for the ERGM simulations}
-
-\item{priorMean}{Prior mean of parameter}
-
-\item{priorCov}{Prior covariance of parameter}
-
-\item{netLabels}{Labels specifying which networks to associate with
-each row of the the parameter matrices}
-
-\item{obsData}{Matrix of observed data}
-
-\item{obsCov}{Fixed (known) covariance of observed data}
-
-\item{priorDf}{Prior degrees of freedom in Inverse-Wishart}
-
-\item{priorScale}{Prior scale matrix in Inverse-Wishart}
-
-\item{obsMean}{Fixed (known) mean of observed data}
-
-\item{dataLabels}{Labels to associate each observation with a grouping}
-
-\item{currCov}{Current value of covariance parameter}
 }
 \description{
 Functions used internally by to perform Gibbs or exchange updates.

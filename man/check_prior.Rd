@@ -13,13 +13,23 @@ check_prior(prior, n_terms, n_groups)
 
 check_prior_mean(x, n_terms)
 
-is_covmat(x, semi = FALSE)
+is_covmat(x)
 
 check_prior_cov(x, n_terms)
 
 check_prior_scale(x, n_terms)
 
 check_prior_df(x, n_terms)
+}
+\arguments{
+\item{prior}{A list of explicit prior specifications.}
+
+\item{n_terms}{Number of terms (summary statistics) in the exponential random
+graph model}
+
+\item{n_groups}{Number of distinct groups}
+
+\item{x}{Prior mean or covariance to be checked}
 }
 \description{
 Internal functions to check compatibility of the prior with the model.

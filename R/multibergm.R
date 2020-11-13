@@ -17,6 +17,10 @@
 #'   \code{\link[ergm]{network.list}} object.
 #' @param main_iters Number of (outer) MCMC iterations
 #' @param control A list of parameters set by \code{\link{control_multibergm}}
+#' @param groups A vector of group memberships
+#' @param prior A list of explicit prior specifications.
+#' @param init A list of initial values.
+#' @param ... Arguments to be passed to methods.
 #'
 #' @return A list containing the following elements:
 #'   \itemize{
@@ -52,12 +56,13 @@ multibergm.formula <- function(object,
                                prior = set_priors(object, groups),
                                init = set_init(object, prior, groups),
                                control = control_multibergm(object,
-                                                            constraints)) {
+                                                            constraints),
+                               ...) {
 
   start_time <- Sys.time()
   main_iters <- as.integer(main_iters)
   if (!mcmcr::is.mcmcr(init)) init <- mcmcr::as.mcmcr(init)
-  
+
   # TODO: add checks for inputs
   networks <- statnet.common::eval_lhs.formula(object)
   n_networks <- length(networks)
@@ -97,7 +102,7 @@ multibergm.formula <- function(object,
   for (k in seq(first_iter, main_iters)) {
     setTxtProgressBar(pb, k)
 
-    curr <- subset(params, iterations = k - 1L)
+    curr <- subset(params, iters = k - 1L)
     curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1, 2)))
 
     # Perform Gibbs update for all variables
@@ -139,17 +144,16 @@ multibergm.formula <- function(object,
 #' @describeIn multibergm S3 method for class 'multibergm', used to continue
 #'   generating posterior samples from a previous fit
 #' @export
-multibergm.multibergm <- function(object, main_iters = 1000) {
+multibergm.multibergm <- function(object, main_iters = 1000, ...) {
 
     old_iters <- dim(object$params$theta)[1]
 
     # Pass on control parameters from previous run
     control <- control_multibergm(object$formula,
-                                  priors = object$control$prior,
-                                  proposal = object$control$proposal,
-                                  n_batches = length(object$control$batches),
-                                  aux_iters = object$control$aux_iters,
-                                  init = object$params)
+                                  object$constraints,
+                                  object$control$proposal,
+                                  object$control$aux_iters,
+                                  length(object$control$batches))
 
     new_iters <- main_iters + old_iters
 

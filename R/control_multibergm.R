@@ -11,25 +11,24 @@
 #'   \code{\link[ergm]{network.list}} object.
 #' @param constraints A one-sided formula specifying one or more constraints
 #'   on the support of the distribution of the networks being simulated.
-#' @param auxIters Number of internal (auxiliary) MCMC iterations used to
+#' @param aux_iters Number of internal (auxiliary) MCMC iterations used to
 #'   simulate a network from the model.
-#' @param nBatches Number of computing cores available to simulate networks
+#' @param n_batches Number of computing cores available to simulate networks
 #'   from the model in parallel.
 #' @param proposal A list of covariance matrices used to generate the MCMC
 #'   proposals.
 #'
 #' @return A list containing the following control parameters:
 #'   \itemize{
-#'      \item \code{auxIters}: Number of internal (auxiliary) MCMC iterations
+#'      \item \code{aux_iters}: Number of internal (auxiliary) MCMC iterations
 #'      used to simulate a network from the model
 #'      \item \code{proposal}: A list of covariance matrices used to
 #'      generate the MCMC proposals.
-#'      \item \code{groupLabel}: A vector containing  group
-#'      labels for each network.
 #'      \item \code{batches}: Used to batch parallel runs of ergm simulation
-#'      \item \code{Clists}: ERGM parameters passed to the ergm simulation
+#'      \item \code{model}: Internal representation of the ergm network model
+#'      \item \code{clists}: ERGM parameters passed to the ergm simulation
 #'      function
-#'      \item \code{MHproposals}: ERGM parameters passed to the ergm simulation
+#'      \item \code{mh_proposals}: ERGM parameters passed to the ergm simulation
 #'      function
 #'   }
 #'

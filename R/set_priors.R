@@ -6,12 +6,11 @@
 #' validity check is also performed to ensure the compatibility of the priors
 #' with the model.
 #'
+#' @inheritParams multibergm
 #' @param formula An \R \code{\link{formula}} object, of the form
 #'   \code{y ~ <model terms>}, where \code{y} is a
 #'   \code{\link[network]{network}} object or a
 #'   \code{\link[ergm]{network.list}} object.
-#' @param groups A vector of group memberships
-#' @param prior A list of explicit prior specifications.
 #'
 #' @export
 #' @importFrom statnet.common eval_lhs.formula
@@ -57,6 +56,13 @@ set_priors <- function(formula, groups = NULL, prior = list()) {
 #' Check validity of multibergm prior
 #'
 #' Internal functions to check compatibility of the prior with the model.
+#'
+#' @inheritParams set_priors
+#'
+#' @param n_terms Number of terms (summary statistics) in the exponential random
+#'     graph model
+#' @param n_groups Number of distinct groups
+#' @param x Prior mean or covariance to be checked
 
 check_prior <- function(prior, n_terms, n_groups) {
 
@@ -93,23 +99,20 @@ check_prior_mean <- function(x, n_terms) {
 }
 
 #' @rdname check_prior
-is_covmat <- function(x, semi = FALSE) {
+is_covmat <- function(x) {
 
+  out <- TRUE
   if (!is.matrix(x) | !isSymmetric(x) | !is.numeric(x)) {
     return(FALSE)
   }
 
   eigenvalues <- eigen(x, symmetric = TRUE, only.values = TRUE)$values
 
-  if (any(eigenvalues < 0)) {
-    return(FALSE)
+  if (any(eigenvalues <= 0)) {
+    out <- FALSE
   }
 
-  if (semi & any(eigenvalues == 0)) {
-    return(FALSE)
-  }
-
-  TRUE
+  out
 }
 
 #' @rdname check_prior
@@ -121,7 +124,7 @@ check_prior_cov <- function(x, n_terms) {
     stop(paste(obj_name, "must be specified."))
   }
 
-  if (any(dim(x) != c(n_terms, n_terms)) || !is_covmat(x, semi = TRUE)) {
+  if (any(dim(x) != c(n_terms, n_terms)) || !is_covmat(x)) {
     stop(paste(obj_name, "must be a positive semidefinite matrix of",
                "dimension (n_terms, n_terms) = (", n_terms, n_terms, ")"))
   }

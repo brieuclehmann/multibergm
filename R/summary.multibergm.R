@@ -7,6 +7,7 @@
 #' @param thin Amount of thinning to apply to the posterior samples
 #' @param burn_in Amount of burn-in to remove from the start of posterior
 #'   samples (pre-thinning)
+#' @param ... Additional parameters to be passed on to lower-level functions.
 #'
 #' @return The function computes and prints posterior means and quantiles for
 #'   the specified parameter, as well as the acceptance rates for parameters
@@ -16,7 +17,8 @@
 summary.multibergm <- function(object,
                                param = "mu_pop",
                                thin = 1L,
-                               burn_in = 0L) {
+                               burn_in = 0L,
+                               ...) {
   thin    <- as.integer(thin)
   burn_in <- as.integer(burn_in)
 

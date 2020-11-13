@@ -15,10 +15,11 @@ multibergm(object, ...)
   main_iters = 1000L,
   prior = set_priors(object, groups),
   init = set_init(object, prior, groups),
-  control = control_multibergm(object, constraints)
+  control = control_multibergm(object, constraints),
+  ...
 )
 
-\method{multibergm}{multibergm}(object, main_iters = 1000)
+\method{multibergm}{multibergm}(object, main_iters = 1000, ...)
 }
 \arguments{
 \item{object}{A multibergm object, or a \R \code{\link{formula}} object,
@@ -26,10 +27,18 @@ of the form \code{y ~ <model terms>}, where \code{y} is a
 \code{\link[network]{network}} object or a
 \code{\link[ergm]{network.list}} object.}
 
+\item{...}{Arguments to be passed to methods.}
+
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
 
+\item{groups}{A vector of group memberships}
+
 \item{main_iters}{Number of (outer) MCMC iterations}
+
+\item{prior}{A list of explicit prior specifications.}
+
+\item{init}{A list of initial values.}
 
 \item{control}{A list of parameters set by \code{\link{control_multibergm}}}
 }
@@ -42,7 +51,8 @@ A list containing the following elements:
     \item \code{main_iters} - the number of MCMC iterations used
     \item \code{control} parameters used to fit the model
     \item \code{params} - list containing MCMC output for each variable
-    \item \code{accepts} - list containing acceptance counts at each iteration
+    \item \code{accepts} - list containing acceptance counts at each
+    iteration
     }
 }
 \description{
@@ -52,7 +62,8 @@ as an ERGM with network-level parameters \eqn{\theta_i}, each of which come
 from a common group- or population-level distribution. An
 exchange-within-Gibbs algorithm is used to generate samples from the joint
 posterior. The group memberships, priors, and other model fitting
-hyperparameters are set through the \code{\link{control_multibergm}} function.
+hyperparameters are set through the \code{\link{control_multibergm}}
+function.
 }
 \section{Methods (by class)}{
 \itemize{

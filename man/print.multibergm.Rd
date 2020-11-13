@@ -12,7 +12,7 @@
 \item{...}{Further arguments passed to other methods}
 }
 \description{
-Automatically called when an object of class \code{\link{multibergm}} is printed.
-Currently, summarizes the number of networks, the number of groups, the model
-formula and the model constraints
+Automatically called when an object of class \code{\link{multibergm}} is
+printed. Currently, summarizes the number of networks, the number of groups,
+the model formula and the model constraints.
 }

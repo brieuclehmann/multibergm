@@ -24,31 +24,30 @@ on the support of the distribution of the networks being simulated.}
 \item{proposal}{A list of covariance matrices used to generate the MCMC
 proposals.}
 
-\item{auxIters}{Number of internal (auxiliary) MCMC iterations used to
+\item{aux_iters}{Number of internal (auxiliary) MCMC iterations used to
 simulate a network from the model.}
 
-\item{nBatches}{Number of computing cores available to simulate networks
+\item{n_batches}{Number of computing cores available to simulate networks
 from the model in parallel.}
 }
 \value{
 A list containing the following control parameters:
   \itemize{
-     \item \code{auxIters}: Number of internal (auxiliary) MCMC iterations
+     \item \code{aux_iters}: Number of internal (auxiliary) MCMC iterations
      used to simulate a network from the model
      \item \code{proposal}: A list of covariance matrices used to
      generate the MCMC proposals.
-     \item \code{groupLabel}: A vector containing  group
-     labels for each network.
      \item \code{batches}: Used to batch parallel runs of ergm simulation
-     \item \code{Clists}: ERGM parameters passed to the ergm simulation
+     \item \code{model}: Internal representation of the ergm network model
+     \item \code{clists}: ERGM parameters passed to the ergm simulation
      function
-     \item \code{MHproposals}: ERGM parameters passed to the ergm simulation
+     \item \code{mh_proposals}: ERGM parameters passed to the ergm simulation
      function
   }
 }
 \description{
 Auxiliary function used to specify settings controlling multibergm fitting.
-This allows the user to control various aspects of the fitting algorithm, 
+This allows the user to control various aspects of the fitting algorithm,
 including MCMC proposal covariance, auxiliary iterations for ERGM simulation,
 and number of cores to be used in parallel.
 }

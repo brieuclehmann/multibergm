@@ -4,7 +4,7 @@
 \alias{summary.multibergm}
 \title{Summarising multibergm model fits}
 \usage{
-\method{summary}{multibergm}(object, param = "muPop", thin = 1L, burn_in = 0L)
+\method{summary}{multibergm}(object, param = "mu_pop", thin = 1L, burn_in = 0L, ...)
 }
 \arguments{
 \item{object}{A \link{multibergm} object}
@@ -13,8 +13,10 @@
 
 \item{thin}{Amount of thinning to apply to the posterior samples}
 
-\item{burnIn}{Amount of burn-in to remove from the start of posterior
+\item{burn_in}{Amount of burn-in to remove from the start of posterior
 samples (pre-thinning)}
+
+\item{...}{Additional parameters to be passed on to lower-level functions.}
 }
 \value{
 The function computes and prints posterior means and quantiles for

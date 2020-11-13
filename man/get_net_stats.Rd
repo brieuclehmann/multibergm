@@ -2,19 +2,39 @@
 % Please edit documentation in R/gof.multibergm.R
 \name{get_net_stats}
 \alias{get_net_stats}
+\alias{get_net_stats.list}
+\alias{get_net_stats.network}
+\alias{get_net_stats.network.list}
 \title{Compute network statistics}
 \usage{
 get_net_stats(object, ...)
+
+\method{get_net_stats}{list}(object, formula, which_stats, ...)
+
+\method{get_net_stats}{network}(object, formula, which_stats, ...)
+
+\method{get_net_stats}{network.list}(object, formula, ...)
 }
 \arguments{
 \item{object}{A network or list of networks}
 
+\item{...}{Arguments to be passed to methods.}
+
 \item{formula}{The ERGM formula containing the summary statistics to be
 computed}
 
-\item{whichStats}{A string specifying which network statistics to be
+\item{which_stats}{A string specifying which network statistics to be
 computed ("all", "model", "gof", or "other").}
 }
 \description{
 GetNetStats is an internal function used to compute network statistics.
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{list}: Network statistics for a list of networks.
+
+\item \code{network}: Network statistics for a single network
+
+\item \code{network.list}: Network statistics for a network.list
+}}
+

@@ -17,7 +17,7 @@ set_priors(formula, groups = NULL, prior = list())
 \item{prior}{A list of explicit prior specifications.}
 }
 \description{
-This is a utility function to set priors for a multibergm. When not 
+This is a utility function to set priors for a multibergm. When not
 explicitly specified, set_priors() uses default (vague) priors. A
 validity check is also performed to ensure the compatibility of the priors
 with the model.

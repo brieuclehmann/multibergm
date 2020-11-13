@@ -10,7 +10,7 @@
 #'   \code{\link{ergm_wrapper}}
 #' @param prior_mean Prior mean of parameter
 #' @param prior_cov Prior covariance of parameter
-#' @param net_labels Labels specifying which networks to associate with
+#' @param labels Labels specifying which networks to associate with
 #'   each row of the the parameter matrices
 #'
 #' @importFrom mvtnorm dmvnorm
@@ -78,7 +78,7 @@ mean_update <- function(obs_data, obs_cov, prior_mean, prior_cov) {
 #' @param prior_df Prior degrees of freedom in Inverse-Wishart
 #' @param prior_scale Prior scale matrix in Inverse-Wishart
 #' @param obs_mean Fixed (known) mean of observed data
-#' @param data_labels Labels to associate each observation with a grouping
+#' @param labels Labels to associate each observation with a grouping
 #' @param curr_cov Current value of covariance parameter
 #'
 #' @describeIn mcmc_updates Gibbs update of a covariance parameter
@@ -127,6 +127,7 @@ ergm_wrapper <- function(coefs, control) {
   seeds  <- rngtools::RNGseq(n_nets)
 
   # Parallel call to ergm_MCMC_slave
+  r <- n <- NULL
   delta <- foreach(n = seq_len(n_nets),
                    r = seeds,
                    .combine = rbind,

@@ -6,6 +6,7 @@
 #' exchange algorithm within an Ancillarity-Sufficiency Interweaving Strategy
 #' (ASIS) to update the remaining parameters.
 #'
+#' @inheritParams multibergm
 #' @param curr A list of the current values of the model parameters
 #' @param control A list of parameters set by \code{\link{control_multibergm}}
 #'  specifying priors, proposal variances, and group labels.
@@ -68,6 +69,7 @@ singlegroup_update <- function(curr, prior, groups, control) {
 #' Ancillarity-Sufficiency Interweaving Strategy (ASIS) to update the
 #' remaining parameters.
 #'
+#' @inheritParams multibergm
 #' @param curr A list of the current values of the model parameters
 #' @param control A list of parameters set by \code{\link{control_multibergm}}
 #'  specifying priors, proposal variances, and group labels.

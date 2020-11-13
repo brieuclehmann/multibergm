@@ -1,8 +1,12 @@
 ### ERGM wrapper
 
 test_that("ergm wrapper returns correct dimension", {
-  data(nets)
-  n_nets <- length(nets)
+  n_nets <- 10L
+  n_nodes <- 10L
+  n_iters <- 5L
+
+  nets <- lapply(seq_len(n_nets),
+                 function(x) network(n_nodes, directed = FALSE))
 
   model <- nets ~ edges
   control <- control_multibergm(model)

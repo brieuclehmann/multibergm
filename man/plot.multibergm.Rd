@@ -4,14 +4,19 @@
 \alias{plot.multibergm}
 \title{Plot BERGM posterior output}
 \usage{
-\method{plot}{multibergm}(object, param = "muPop", burn_in = 0L, thin = 1L)
+\method{plot}{multibergm}(x, param = "mu_pop", burn_in = 0L, thin = 1L, ...)
 }
 \arguments{
-\item{object}{A \link{multibergm} object}
+\item{x}{A \link{multibergm} object}
 
 \item{param}{Multibergm parameter to be summarised}
 
+\item{burn_in}{Amount of burn-in to remove from the start of posterior
+samples (pre-thinning)}
+
 \item{thin}{Amount of thinning to apply to the posterior samples}
+
+\item{...}{Additional parameters to be passed on to lower-level functions.}
 }
 \value{
 Outputs a density plot, trace plot, and autocorrelation plot for
