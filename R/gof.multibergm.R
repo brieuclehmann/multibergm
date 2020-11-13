@@ -6,18 +6,19 @@
 #' networks.
 #'
 #' @inheritParams summary.multibergm
-#' @param sampleSize Number of networks to be simulated and compared to the
+#' @param sample_size Number of networks to be simulated and compared to the
 #'   observed networks.
-#' @param auxIters Number of iterations used for network simulation.
+#' @param aux_iters Number of iterations used for network simulation.
 #' @param coefs Optional set of model coefficients to use for network
 #'   simulation. The default is to use the posterior samples of the
 #'   population-level parameter.
+#' @param ... Additional parameters to be passed on to lower-level functions.
 #'
 #' @return Outputs bar plots (for observed networks) overlayed with ribbons
 #'   (for simulated network) of degree, minimum geodesic distances,
 #'   and edge-wise shared partner distributions.
 #'
-#' @export gof.multibergm
+#' @export
 #'
 #' @importFrom statnet.common nonsimp_update.formula
 #' @importFrom stats quantile
@@ -27,57 +28,65 @@
 
 gof.multibergm <- function(object,
                            coefs = NULL,
-                           sampleSize = 100,
-                           auxIters = 1.5*object$control$auxIters,
-                           burnIn = 0,
-                           thin = 1){
+                           sample_size = 100L,
+                           aux_iters = 1.5 * object$control$aux_iters,
+                           burn_in = 0L,
+                           thin = 1L,
+                           ...) {
 
-  # Remove burnIn iterations and apply thinning (default: no thinning)
-  postIters      <- seq(burnIn + 1, object$mainIters, thin)
-  object$params  <- lapply(object$params,
-                           function(x) abind::asub(x, postIters, 1))
+  thin    <- as.integer(thin)
+  burn_in <- as.integer(burn_in)
+
+  # Remove burn_in iterations and apply thinning (default: no thinning)
+  post_iters     <- seq(burn_in + 1L, object$main_iters, thin)
+  object$params  <- subset(object$params, iters = post_iters)
 
   # Get statistics for observed networks
-  obs_df <- GetNetStats(object$networks, object$formula, "gof")
+  obs_df <- get_net_stats(object$networks, object$formula, "gof")
 
-  nIters <- dim(object$params$theta)[1]
-  if (is.null(coefs))
-    coefs  <- as.matrix(object$params$muPop[sample(nIters, sampleSize), ])
+  n_iters <- mcmcr::niters(object$params$theta)
+  if (is.null(coefs)) {
+    coefs  <- subset(object$params$mu_pop, iters = sample(n_iters, sample_size))
+  }
 
   sim_df <- obs_df[0, ]
-  for (i in 1:sampleSize) {
-    y         <- object$networks[[sample(length(object$networks),1)]]
+  for (i in seq_len(sample_size)) {
+    y         <- object$networks[[sample(length(object$networks), 1)]]
     myformula <- nonsimp_update.formula(object$formula, y ~.,
                                         from.new = "y")
 
-    netSim <- simulate(myformula, coef = coefs[i, ],
-                       nsim = 1, constraints = object$constraints,
-                       control = control.simulate.formula(MCMC.burnin=auxIters))
+    net_sim <- ergm::simulate_formula(myformula,
+                                      coef = coefs[1, i, ],
+                                      nsim = 1,
+                                      constraints = object$constraints,
+                                      control = control.simulate.formula(
+                                        MCMC.burnin = aux_iters)
+    )
 
-    this_df <- GetNetStats(netSim, myformula, "gof")
-    sim_df  <- rbind(sim_df,this_df)
+    this_df <- get_net_stats(net_sim, myformula, "gof")
+    sim_df  <- rbind(sim_df, this_df)
   }
 
   sim_df <- sim_df %>%
-    group_by(Stat, n) %>%
-    summarise(Group = mean(Value),
-              Lower = quantile(Value, 0.025),
-              Upper = quantile(Value, 0.975)) %>%
-    mutate(nMax = max(n[Upper>0 & is.finite(n)])) %>%
-    filter(is.infinite(n) | n <= nMax + 1)
+    group_by(.data$Stat, .data$n) %>%
+    summarise(Group = mean(.data$Value),
+              Lower = quantile(.data$Value, 0.025),
+              Upper = quantile(.data$Value, 0.975)) %>%
+    mutate(nMax = max(.data$n[.data$Upper > 0 & is.finite(.data$n)])) %>%
+    filter(is.na(.data$n) | .data$n <= .data$nMax + 1)
 
   obs_df <- obs_df %>%
-    group_by(Stat) %>%
-    mutate(nMax = max(n[Value>0 & is.finite(n)])) %>%
-    filter(is.infinite(n) | n <= nMax + 1)
+    group_by(.data$Stat) %>%
+    mutate(nMax = max(.data$n[.data$Value > 0 & is.finite(.data$n)])) %>%
+    filter(is.na(.data$n) | .data$n <= .data$nMax + 1)
 
-  ggplot(obs_df, aes(x=n, y = Value, group = n)) +
+  ggplot(obs_df, aes(x = .data$n, y = .data$Value, group = .data$n)) +
     geom_boxplot() +
-    geom_line(data = sim_df, aes(y=Group, x=n),
+    geom_line(data = sim_df, aes(y = .data$Group, x = .data$n),
               inherit.aes = FALSE) +
     geom_ribbon(data = sim_df,
-                aes(ymin=Lower, ymax=Upper, x=n), alpha=0.4,
-                inherit.aes=F) +
+                aes(ymin = .data$Lower, ymax = .data$Upper, x = .data$n),
+                alpha = 0.4, inherit.aes = FALSE) +
     facet_wrap("Stat", scales = "free", ncol = 1) +
     scale_linetype_discrete(name = NULL, labels = "Observed data") +
     xlab("k") +
@@ -91,72 +100,82 @@ gof.multibergm <- function(object,
 #' @param object A network or list of networks
 #' @param formula The ERGM formula containing the summary statistics to be
 #'   computed
-#' @param whichStats A string specifying which network statistics to be
+#' @param which_stats A string specifying which network statistics to be
 #'   computed ("all", "model", "gof", or "other").
+#' @param ... Arguments to be passed to methods.
 #'
 #' @export
-GetNetStats <- function(object, formula, whichStats)
-  UseMethod("GetNetStats")
+get_net_stats <- function(object, ...)
+  UseMethod("get_net_stats")
 
 
 #' @export
 #'
 #' @importFrom plyr ldply
-GetNetStats.list <- function(object, formula, whichStats)
-  ldply(object, GetNetStats, formula, whichStats)
+#' @describeIn get_net_stats Network statistics for a list of networks.
+get_net_stats.list <- function(object, formula, which_stats, ...)
+  ldply(object, get_net_stats, formula, which_stats)
 
-##########################################################################################
+###############################################################################
 
 #' @export
 #'
-#' @importFrom igraph graph_from_adjacency_matrix
-#' @importFrom igraph assortativity.degree
-#' @importFrom igraph average.path.length
-#' @importFrom igraph transitivity
 #' @importFrom statnet.common nonsimp_update.formula
 #' @importFrom tidyr separate
 #' @import network
-GetNetStats.network <- function(object, formula, whichStats) {
+#'
+#' @describeIn get_net_stats Network statistics for a single network
+get_net_stats.network <- function(object, formula, which_stats, ...) {
 
-  modelStats <- summary(nonsimp_update.formula(formula, object ~ .,
-                                               from.new = "object"))
-
-  graph      <- graph_from_adjacency_matrix(as.matrix(object))
-  graphStats <- data.frame(assortativity     = assortativity.degree(graph),
-                           transitivity      = transitivity(graph),
-                           averagePathLength = average.path.length(graph,
-                                                                   directed=F))
-
-  # Degree distribution
-  nNodes  <- network.size(object)
-  degDist <- summary(object ~ degree(0:(nNodes - 1)))/nNodes
-  deg_df  <- data.frame(Stat=names(degDist), Value=unname(degDist))
-  deg_df  <- separate(deg_df, Stat, c("Stat", "n"), sep = 6)
+  model_stats <- summary(nonsimp_update.formula(formula, object ~ .,
+                                                from.new = "object"))
 
   # Edgewise shared partners distribution
-  nEdges  <- network.edgecount(object)
-  esp     <- summary(object ~ esp(0:(nNodes - 1)))/nEdges
-  esp_df  <- data.frame(Stat=names(esp), Value=unname(esp))
-  esp_df  <- separate(esp_df, Stat, c("Stat", "n"), sep = 3)
+  n_nodes  <- network.edgecount(object)
+  esp      <- summary(object ~ esp(0:(n_nodes - 1))) / n_nodes
+  esp_df   <- data.frame(Stat = names(esp), Value = unname(esp))
+  esp_df   <- separate(esp_df, Stat, c("Stat", "n"), sep = 3)
 
   # Geodesic distance distribution
-  nDyads     <- network.dyadcount(object)
-  geoDist    <- ergm.geodistdist(object)/nDyads
-  geoDist_df <- data.frame(Stat  = "distance",
-                           n     = names(geoDist),
-                           Value = unname(geoDist), stringsAsFactors = FALSE)
+  n_dyads      <- network.dyadcount(object)
+  geo_dist     <- ergm.geodistdist(object) / n_dyads
+  geo_dist_df  <- data.frame(Stat  = "distance",
+                             n     = names(geo_dist),
+                             Value = unname(geo_dist), stringsAsFactors = FALSE)
+  geo_dist_df$n[geo_dist_df$n == Inf] <- NA_integer_
 
-  gofStats   <- bind_rows(deg_df, esp_df, geoDist_df)
-  gofStats$n <- as.numeric(gofStats$n)
+  # Degree distribution
+  if (is.directed(object)) {
+    n_nodes  <- network.size(object)
+    ideg_dist <- summary(object ~ idegree(0:(n_nodes - 1))) / n_nodes
+    ideg_df   <- data.frame(Stat = names(ideg_dist), Value = unname(ideg_dist))
+    ideg_df   <- separate(ideg_df, Stat, c("Stat", "n"), sep = 7)
 
-  switch(whichStats,
-         all   = data.frame((t(modelStats)), graphStats),
-         model = data.frame(t(modelStats)),
-         gof   = gofStats,
-         other = data.frame(graphStats))
+    odeg_dist <- summary(object ~ odegree(0:(n_nodes - 1))) / n_nodes
+    odeg_df   <- data.frame(Stat = names(odeg_dist), Value = unname(odeg_dist))
+    odeg_df   <- separate(odeg_df, Stat, c("Stat", "n"), sep = 7)
 
+    gof_stats   <- bind_rows(ideg_df, odeg_df, esp_df, geo_dist_df)
+  } else {
+    n_nodes  <- network.size(object)
+    deg_dist <- summary(object ~ degree(0:(n_nodes - 1))) / n_nodes
+    deg_df   <- data.frame(Stat = names(deg_dist), Value = unname(deg_dist))
+    deg_df   <- separate(deg_df, Stat, c("Stat", "n"), sep = 6)
+
+    gof_stats   <- bind_rows(deg_df, esp_df, geo_dist_df)
+  }
+
+  gof_stats$n <- as.integer(gof_stats$n)
+
+  switch(which_stats,
+         model = data.frame(t(model_stats)),
+         gof   = gof_stats)
 }
 
 ###############################################################################
-GetNetStats.network.list <- function(object, ergmFormula)
-  plyr::ldply(object, GetNetStats, ergmFormula)
+
+#' @export
+#'
+#' @describeIn get_net_stats Network statistics for a network.list
+get_net_stats.network.list <- function(object, formula, ...)
+  plyr::ldply(object, get_net_stats, formula)

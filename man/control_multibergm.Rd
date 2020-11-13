@@ -2,10 +2,15 @@
 % Please edit documentation in R/control_multibergm.R
 \name{control_multibergm}
 \alias{control_multibergm}
-\title{Set multibergm options}
+\title{Set multibergm MCMC options}
 \usage{
-control_multibergm(formula, constraints = ~., priors = NULL,
-  init = NULL, proposal = NULL, auxIters = 10000, nBatches = 1)
+control_multibergm(
+  formula,
+  constraints = ~.,
+  proposal = NULL,
+  aux_iters = 1000,
+  n_batches = 1
+)
 }
 \arguments{
 \item{formula}{An \R \code{\link{formula}} object, of the form
@@ -16,41 +21,33 @@ control_multibergm(formula, constraints = ~., priors = NULL,
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
 
-\item{priors}{A list of prior settings.}
-
-\item{init}{A list of initial values.}
-
 \item{proposal}{A list of covariance matrices used to generate the MCMC
 proposals.}
 
-\item{auxIters}{Number of internal (auxiliary) MCMC iterations used to
+\item{aux_iters}{Number of internal (auxiliary) MCMC iterations used to
 simulate a network from the model.}
 
-\item{nBatches}{Number of computing cores available to simulate networks
+\item{n_batches}{Number of computing cores available to simulate networks
 from the model in parallel.}
 }
 \value{
 A list containing the following control parameters:
   \itemize{
-     \item \code{auxIters}: Number of internal (auxiliary) MCMC iterations
+     \item \code{aux_iters}: Number of internal (auxiliary) MCMC iterations
      used to simulate a network from the model
-     \item \code{prior}: A list of prior settings
-     \item \code{init}: A list of initial values
      \item \code{proposal}: A list of covariance matrices used to
      generate the MCMC proposals.
-     \item \code{groupLabel}: A vector containing  group
-     labels for each network.
      \item \code{batches}: Used to batch parallel runs of ergm simulation
-     \item \code{Clists}: ERGM parameters passed to the ergm simulation
+     \item \code{model}: Internal representation of the ergm network model
+     \item \code{clists}: ERGM parameters passed to the ergm simulation
      function
-     \item \code{MHproposals}: ERGM parameters passed to the ergm simulation
+     \item \code{mh_proposals}: ERGM parameters passed to the ergm simulation
      function
   }
 }
 \description{
 Auxiliary function used to specify settings controlling multibergm fitting.
-This allows the user to control various aspects of the model and fitting
-process, including prior specification, parameter initialisation, MCMC
-proposal covariance, auxiliary iterations for ERGM simulation, and number of
-cores to be used in parallel.
+This allows the user to control various aspects of the fitting algorithm,
+including MCMC proposal covariance, auxiliary iterations for ERGM simulation,
+and number of cores to be used in parallel.
 }

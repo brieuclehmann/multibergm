@@ -5,8 +5,9 @@
 #' @param object A \link{multibergm} object
 #' @param param Multibergm parameter to be summarised
 #' @param thin Amount of thinning to apply to the posterior samples
-#' @param burnIn Amount of burn-in to remove from the start of posterior
+#' @param burn_in Amount of burn-in to remove from the start of posterior
 #'   samples (pre-thinning)
+#' @param ... Additional parameters to be passed on to lower-level functions.
 #'
 #' @return The function computes and prints posterior means and quantiles for
 #'   the specified parameter, as well as the acceptance rates for parameters
@@ -14,50 +15,52 @@
 #'
 #' @export
 summary.multibergm <- function(object,
-                               param = "muPop",
-                               thin = 1,
-                               burnIn = 0) {
+                               param = "mu_pop",
+                               thin = 1L,
+                               burn_in = 0L,
+                               ...) {
+  thin    <- as.integer(thin)
+  burn_in <- as.integer(burn_in)
 
-  # Remove burnIn iterations and apply thinning (default: no thinning)
-  postIters      <- seq(burnIn + 1, object$mainIters, thin)
-  object$params  <- lapply(object$params,
-                          function(x) abind::asub(x, postIters, 1))
+  # Remove burn_in and apply thinning
+  post_iters      <- seq(burn_in + 1L, object$main_iters, thin)
+  output  <- get(param, object$params)
+  output  <- subset(output, iterations = post_iters)
 
-  modelTerms <- object$control$model$coef.names
-  nTerms     <- length(attr(terms(object$formula), "term.labels"))
-  output     <- get(param, object$params)
+  model_terms <- object$control$model$coef.names
+  n_terms     <- length(attr(terms(object$formula), "term.labels"))
 
-  cat("\n", "Posterior Density Estimate for Model: \ny ~", paste(object$formula[3]),
-      "\n", "\n")
+  cat("\n", "Posterior Density Estimate for Model: \ny ~",
+      paste(object$formula[3]), "\n", "\n")
 
-  if (param == "muPop") {
-    FFmu   <- coda::mcmc(output, start=burnIn+1, thin = thin)
+  if (param == "mu_pop") {
+    ff_mu   <- mcmcr::as.mcmc(output, start = burn_in + 1, thin = thin)
 
-    table1 <- summary(FFmu)$statistics
-    rnames <- paste0("mu", 1:nTerms, " (", modelTerms, ")")
-    table1 <- matrix(table1, nTerms,
-                     dimnames = list(rnames, colnames(table1)))
+    table1 <- summary(ff_mu)$statistics
+    rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ")")
+    table1 <- matrix(table1, n_terms,
+                     dimnames = list(rnames, names(table1)))
 
-    table2 <- summary(FFmu)$quantiles
-    table2 <- matrix(table2, nTerms,
-                     dimnames = list(rnames, colnames(table2)))
+    table2 <- summary(ff_mu)$quantiles
+    table2 <- matrix(table2, n_terms,
+                     dimnames = list(rnames, names(table2)))
 
     print(table1, digits = 4)
     cat("\n")
     print(table2, digits = 4)
 
   } else {
-    for (g in 1:object$init$nGroups) {
-      FFmu   <- coda::mcmc(output, start=burnIn+1, thin = thin)
+    for (g in 1:object$init$n_groups) {
+      ff_mu   <- coda::mcmc(output, start = burn_in + 1, thin = thin)
 
-      table1 <- summary(FFmu)$statistics
-      rnames <- paste0("mu", 1:nTerms, " (", modelTerms, ", G",
-                       rep(g, each = nTerms), ")")
-      table1 <- matrix(table1, object$init$nStats,
+      table1 <- summary(ff_mu)$statistics
+      rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ", G",
+                       rep(g, each = n_terms), ")")
+      table1 <- matrix(table1, n_terms,
                        dimnames = list(rnames, colnames(table1)))
 
-      table2 <- summary(FFmu)$quantiles
-      table2 <- matrix(table2, object$init$nStats,
+      table2 <- summary(ff_mu)$quantiles
+      table2 <- matrix(table2, n_terms,
                        dimnames = list(rnames, colnames(table2)))
 
       print(table1, digits = 4)
@@ -68,15 +71,15 @@ summary.multibergm <- function(object,
 
   # Print acceptance rates
   cat("\n Theta acceptance rate: \n")
-  thetaAR <- colSums(object$accepts$theta)/(object$mainIters - 1)
-  cat(formatC(mean(thetaAR), digits = 3, format = "f"),
-      " (", formatC(min(thetaAR), digits = 3, format = "f"), ", ",
-      formatC(max(thetaAR), digits = 3, format = "f"), ")", sep="")
+  theta_ar <- colSums(object$accepts$theta) / (object$main_iters - 1)
+  cat(formatC(mean(theta_ar), digits = 3, format = "f"),
+      " (", formatC(min(theta_ar), digits = 3, format = "f"), ", ",
+      formatC(max(theta_ar), digits = 3, format = "f"), ")", sep = "")
 
   cat("\n Mu acceptance rate: \n")
-  muAR <- colSums(object$accepts$mu)/(object$mainIters - 1)
-  cat(formatC(mean(muAR), digits = 3, format = "f"),
-      " (", formatC(min(muAR), digits = 3, format = "f"), ", ",
-      formatC(max(muAR), digits = 3, format = "f"), ") \n", sep="")
+  mu_ar <- colSums(object$accepts$mu) / (object$main_iters - 1)
+  cat(formatC(mean(mu_ar), digits = 3, format = "f"),
+      " (", formatC(min(mu_ar), digits = 3, format = "f"), ", ",
+      formatC(max(mu_ar), digits = 3, format = "f"), ") \n", sep = "")
 
 }

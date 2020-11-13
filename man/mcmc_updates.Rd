@@ -8,13 +8,25 @@
 \alias{ergm_wrapper}
 \title{Internal functions for MCMC updates}
 \usage{
-exchange_update(curr, prop, delta, priorCov, priorMean = NULL,
-  netLabels = NULL)
+exchange_update(
+  curr,
+  prop,
+  delta,
+  prior_cov,
+  prior_mean = double(ncol(curr)),
+  labels = seq_len(nrow(curr))
+)
 
-mean_update(obsData, obsCov, priorMean, priorCov)
+mean_update(obs_data, obs_cov, prior_mean, prior_cov)
 
-cov_update(obsData, priorDf, priorScale, obsMean, dataLabels = NULL,
-  currCov = NULL)
+cov_update(
+  obs_data,
+  prior_df,
+  prior_scale,
+  obs_mean,
+  labels = rep(1, nrow(obs_data)),
+  curr_cov = NULL
+)
 
 ergm_wrapper(coefs, control)
 }
@@ -26,26 +38,23 @@ ergm_wrapper(coefs, control)
 \item{delta}{Change in summary statistics as produced by
 \code{\link{ergm_wrapper}}}
 
-\item{priorCov}{Prior covariance of parameter}
+\item{prior_cov}{Prior covariance of parameter}
 
-\item{priorMean}{Prior mean of parameter}
+\item{prior_mean}{Prior mean of parameter}
 
-\item{netLabels}{Labels specifying which networks to associate with
-each row of the the parameter matrices}
+\item{labels}{Labels to associate each observation with a grouping}
 
-\item{obsData}{Matrix of observed data}
+\item{obs_data}{Matrix of observed data}
 
-\item{obsCov}{Fixed (known) covariance of observed data}
+\item{obs_cov}{Fixed (known) covariance of observed data}
 
-\item{priorDf}{Prior degrees of freedom in Inverse-Wishart}
+\item{prior_df}{Prior degrees of freedom in Inverse-Wishart}
 
-\item{priorScale}{Prior scale matrix in Inverse-Wishart}
+\item{prior_scale}{Prior scale matrix in Inverse-Wishart}
 
-\item{obsMean}{Fixed (known) mean of observed data}
+\item{obs_mean}{Fixed (known) mean of observed data}
 
-\item{dataLabels}{Labels to associate each observation with a grouping}
-
-\item{currCov}{Current value of covariance parameter}
+\item{curr_cov}{Current value of covariance parameter}
 
 \item{coefs}{Matrix of coefficients to simulate ERGs from}
 

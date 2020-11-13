@@ -1,9 +1,12 @@
 Package: multibergm
 Type: Package
-Title: Bayesian exponential random graph models for multiple networks
-Version: 0.1
-Authors@R: person("Brieuc", "Lehmann", email = "brieuc.lehmann@bdi.ox.ac.uk",
-                  role = c("aut", "cre"))
+Title: Bayesian Exponential Random Graph Models for Multiple Networks
+Version: 0.2.0
+Authors@R: 
+    person(given = "Brieuc",
+           family = "Lehmann",
+           role = c("aut", "cre"),
+           email = "brieuc.lehmann@gmail.com")
 Description: Set of tools to fit multiple networks using Bayesian exponential
              random graph models.
 Depends: R (>= 3.1.0), ergm
@@ -16,17 +19,22 @@ Imports:
     foreach,
     doParallel,
     rngtools,
-    igraph,
     reshape2,
     plyr,
     tidyr,
     statnet.common,
+    mcmcr,
     ggplot2,
     coda,
     cowplot,
     network
 License: GPL-3
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Encoding: UTF-8
-
+Suggests: 
+    knitr,
+    rmarkdown,
+    vdiffr,
+    testthat (>= 2.1.0)
+VignetteBuilder: knitr
