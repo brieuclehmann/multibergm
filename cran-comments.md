@@ -1,6 +1,8 @@
 ## Test environments
-* local OS X install, R 3.1.2
-* ubuntu 12.04 (on travis-ci), R 3.1.2
+* local macOS 10.15, R 3.6.3
+* macOS 10.15 (release)
+* Windows Server 2019 (release)
+* ubuntu 20.04 (devel and release)
 * win-builder (devel and release)
 
 ## R CMD check results
