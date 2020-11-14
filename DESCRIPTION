@@ -7,8 +7,11 @@ Authors@R:
            family = "Lehmann",
            role = c("aut", "cre"),
            email = "brieuc.lehmann@gmail.com")
-Description: Set of tools to fit multiple networks using Bayesian exponential
-             random graph models.
+Description: Fit populations of networks using Bayesian exponential
+             random graph models. This package provides MCMC algorithms
+             to fit multiple networks in a Bayesian hierarchical model, as well
+             as additional functionality to analyse the resulting posterior
+             distribution.
 Depends: R (>= 3.1.0), ergm
 Imports:
     dplyr,
