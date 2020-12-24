@@ -27,6 +27,8 @@ summary.multibergm <- function(object,
   output  <- get(param, object$params)
   output  <- subset(output, iterations = post_iters)
 
+  object$accepts$theta <- object$accepts$theta[post_iters, ,drop=FALSE]
+  object$accepts$mu <- object$accepts$mu[post_iters, ,drop=FALSE]
   model_terms <- object$control$model$coef.names
   n_terms     <- length(attr(terms(object$formula), "term.labels"))
 
@@ -71,13 +73,13 @@ summary.multibergm <- function(object,
 
   # Print acceptance rates
   cat("\n Theta acceptance rate: \n")
-  theta_ar <- colSums(object$accepts$theta) / (object$main_iters - 1)
+  theta_ar <- colSums(object$accepts$theta) / (length(post_iters) - 1)
   cat(formatC(mean(theta_ar), digits = 3, format = "f"),
       " (", formatC(min(theta_ar), digits = 3, format = "f"), ", ",
       formatC(max(theta_ar), digits = 3, format = "f"), ")", sep = "")
 
   cat("\n Mu acceptance rate: \n")
-  mu_ar <- colSums(object$accepts$mu) / (object$main_iters - 1)
+  mu_ar <- colSums(object$accepts$mu) / (length(post_iters) - 1)
   cat(formatC(mean(mu_ar), digits = 3, format = "f"),
       " (", formatC(min(mu_ar), digits = 3, format = "f"), ", ",
       formatC(max(mu_ar), digits = 3, format = "f"), ") \n", sep = "")

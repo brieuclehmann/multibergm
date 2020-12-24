@@ -15,7 +15,7 @@ multibergm(object, ...)
   main_iters = 1000L,
   prior = set_priors(object, groups),
   init = set_init(object, prior, groups),
-  control = control_multibergm(object, constraints),
+  control = control_multibergm(object, constraints, groups),
   ...
 )
 

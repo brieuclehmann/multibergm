@@ -4,7 +4,7 @@
 \alias{singlegroup_update}
 \title{MCMC update for single-group multi-BERGM}
 \usage{
-singlegroup_update(curr, prior, groups, control)
+singlegroup_update(curr, prior, groups, proposals, control)
 }
 \arguments{
 \item{curr}{A list of the current values of the model parameters}
@@ -12,6 +12,8 @@ singlegroup_update(curr, prior, groups, control)
 \item{prior}{A list of explicit prior specifications.}
 
 \item{groups}{A vector of group memberships}
+
+\item{proposals}{A list of the current RW proposal parameters}
 
 \item{control}{A list of parameters set by \code{\link{control_multibergm}}
 specifying priors, proposal variances, and group labels.}
