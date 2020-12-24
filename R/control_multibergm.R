@@ -15,7 +15,7 @@
 #'   simulate a network from the model.
 #' @param n_batches Number of computing cores available to simulate networks
 #'   from the model in parallel.
-#' @param proposal A list of covariance matrices used to generate the MCMC
+#' @param initial_proposals A list of covariance matrices used to initialise the MCMC
 #'   proposals.
 #'
 #' @return A list containing the following control parameters:
@@ -37,7 +37,11 @@
 #' @export
 control_multibergm <- function(formula,
                                constraints = ~.,
-                               proposal    = NULL,
+                               groups = NULL,
+                               proposal_update_freq = 20,
+                               proposal_update_max = 1e6,
+                               proposal_xi = 0.05,
+                               init_proposals   = NULL,
                                aux_iters   = 1000,
                                n_batches   = 1) {
 
@@ -51,10 +55,28 @@ control_multibergm <- function(formula,
 
   n_nets <- length(networks)
   n_terms    <- length(attr(terms(formula), "term.labels"))
-
+  if (is.null(groups)) {
+    n_groups <- 1
+  } else {
+    n_groups <- length(unique(groups))
+  }
+  
+  
   # Set default settings for proposals unless explicitly specified
-  if (is.null(proposal$theta)) proposal$theta <- diag(0.1^2, n_terms)
-  if (is.null(proposal$mu))    proposal$mu    <- diag(0.1^2, n_terms)
+  if (is.null(init_proposals$theta)) {
+    init_proposals$theta <- array(NA, c(n_nets, n_terms, n_terms))
+    for (i in 1:n_nets) {
+      init_proposals$theta[i, , ] <- diag(0.1^2, n_terms)
+    }
+  }
+
+  if (is.null(init_proposals$mu)) {
+    init_proposals$mu    <- array(NA, c(n_groups, n_terms, n_terms))
+      for (i in 1:n_groups) {
+        init_proposals$mu[i, , ] <- diag(0.1^2, n_terms)
+      }
+  }
+
 
   # Specify network batching for parallelisation
   if (n_batches == 1) {
@@ -70,11 +92,13 @@ control_multibergm <- function(formula,
   mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
                                networks[[1]])
 
-  list(aux_iters    = aux_iters,
-       proposal     = proposal,
-       batches      = batches,
-       model        = model,
-       clists       = clists,
-       mh_proposals = mh_proposals)
+  list(aux_iters            = aux_iters,
+       init_proposals       = init_proposals,
+       proposal_update_freq = proposal_update_freq,
+       proposal_update_max  = proposal_update_max,
+       batches              = batches,
+       model                = model,
+       clists               = clists,
+       mh_proposals         = mh_proposals)
 
 }

@@ -1,4 +1,4 @@
-> summary(fit)
+> summary(fit_single)
 Warning: The `iterations` argument of `subset()` is deprecated as of lifecycle 0.2.1.
 Please use the `iters` argument instead.
 
