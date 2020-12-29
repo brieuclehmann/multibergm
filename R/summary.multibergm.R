@@ -39,11 +39,11 @@ summary.multibergm <- function(object,
     table1 <- summary(ff_mu)$statistics
     rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ")")
     table1 <- matrix(table1, n_terms,
-                     dimnames = list(rnames, names(table1)))
+                     dimnames = list(rnames, colnames(table1)))
 
     table2 <- summary(ff_mu)$quantiles
     table2 <- matrix(table2, n_terms,
-                     dimnames = list(rnames, names(table2)))
+                     dimnames = list(rnames, colnames(table2)))
 
     print(table1, digits = 4)
     cat("\n")

@@ -6,10 +6,10 @@ Please use the `iters` argument instead.
  Posterior Density Estimate for Model: 
 y ~ edges 
  
-             Mean     SD Naive SE Time-series SE
-mu1 (edges) 17.92 0.2768   0.1238         0.1238
+             [,1]   [,2]   [,3]   [,4]
+mu1 (edges) 17.92 0.2768 0.1238 0.1238
 
-             2.5%   25%   50%   75% 97.5%
+             [,1]  [,2]  [,3]  [,4]  [,5]
 mu1 (edges) 17.52 17.91 17.96 18.01 18.22
 
  Theta acceptance rate: 
