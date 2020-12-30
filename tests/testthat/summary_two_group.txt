@@ -1,19 +1,21 @@
-> summary(fit_single)
-Warning: The `iterations` argument of `subset()` is deprecated as of lifecycle 0.2.1.
-Please use the `iters` argument instead.
-
+> summary(fit_edges_two)
 
  Posterior Density Estimate for Model: 
 y ~ edges 
  
-             [,1]  [,2]  [,3]   [,4]
-mu1 (edges) -1.52 3.814 0.603 0.4321
+                   Mean     SD Naive SE Time-series SE
+mu1 (edges, G1) -0.3484 0.9847   0.1557          1.017
 
-              [,1] [,2]   [,3]   [,4]  [,5]
-mu1 (edges) -8.013 -3.3 -1.834 0.4437 7.149
+                  2.5%    25%     50%    75% 97.5%
+mu1 (edges, G1) -1.662 -1.318 -0.1279 0.4976 1.233
+                   Mean     SD Naive SE Time-series SE
+mu1 (edges, G2) 0.02345 0.8534   0.1349         0.7754
+
+                  2.5%     25%     50%    75% 97.5%
+mu1 (edges, G2) -1.326 -0.6755 -0.1016 0.7172 1.586
 
  Theta acceptance rate: 
-0.428 (0.333, 0.513)
+0.454 (0.282, 0.564)
  Mu acceptance rate: 
-0.359 (0.359, 0.359) 
+0.410 (0.385, 0.436) 
 

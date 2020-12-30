@@ -11,7 +11,7 @@
 print.multibergm <- function(x, ...) {
   networks <- statnet.common::eval_lhs.formula(x$formula)
 
-  n_groups <- length(unique(x$control$groupLabel))
+  n_groups <- length(unique(x$groups))
   n_nets   <- length(networks)
 
   s_net <- ifelse(n_nets > 1, "s", "")

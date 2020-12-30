@@ -21,15 +21,15 @@ test_that("Basic single group multibergm runs without errors", {
 
 })
 
-test_that("print.multibergm() returns correct output", {
+test_that("print.multibergm() returns correct output for single group", {
 
-  verify_output(test_path("print_two_group.txt"), fit_single)
+  verify_output(test_path("print_one_group.txt"), fit_single)
 })
 
 
-test_that("summary.multibergm() returns correct output", {
+test_that("summary.multibergm() returns correct output for single group", {
 
-  verify_output(test_path("summary_two_group.txt"), summary(fit_single))
+  verify_output(test_path("summary_one_group.txt"), summary(fit_single))
 })
 
 
@@ -49,4 +49,15 @@ test_that("Two group multibergm runs without errors", {
   expect_equal(dim(fit$params$theta), c(1, n_iters, n_nets, 2))
   expect_equal(length(fit$networks), n_nets)
   
+})
+
+test_that("print.multibergm() returns correct output for two groups", {
+  
+  verify_output(test_path("print_two_group.txt"), fit_edges_two)
+})
+
+
+test_that("summary.multibergm() returns correct output for two groups", {
+  
+  verify_output(test_path("summary_two_group.txt"), summary(fit_edges_two))
 })
