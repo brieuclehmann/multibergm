@@ -83,7 +83,7 @@ multigroup_update <- function(curr, prior, groups, proposals, control) {
   n_groups    <- dim(curr$mu_group)[1]
 
   # Preallocate parameter values for next iteration
-  nxt     <- lapply(curr, function(x) array(NA, dim(x)))
+  nxt     <- lapply(curr, function(x) replace(x, seq_along(x), NA_real_))
   accepts <- list()
 
   # First, update covariance parameters and population-level mean parameter
@@ -101,7 +101,7 @@ multigroup_update <- function(curr, prior, groups, proposals, control) {
   # Update network-level mean parameters in centered parameterisation
   theta_prop <- array(NA, dim(curr$theta))
   for (i in 1:nrow(curr$theta)) {
-    this_proposal <- proposals$theta[i,,]
+    this_proposal <- as.matrix(proposals$theta[i,,])
     theta_prop[i,] <- rmvnorm(1, curr$theta[i,], sigma = this_proposal)
   }
   coefs       <- array(NA, dim(theta_prop))
@@ -116,12 +116,12 @@ multigroup_update <- function(curr, prior, groups, proposals, control) {
   mu_group_mid <- array(NA, dim(curr$mu_group))
   for (g in 1:n_groups) {
     nws                <- which(groups == g)
-    mu_group_curr      <- sweep(theta_mid[nws, ], 2, curr$mu_group[g, ], "+")
+    mu_group_curr      <- sweep(theta_mid[nws, ,drop=FALSE], 2, curr$mu_group[g, ], "+")
     mu_group_mid[g, ]  <- mean_update(mu_group_curr, nxt$cov_theta,
                                       nxt$mu_pop, nxt$cov_mu_group)
 
     # Switch to non-centered parameterisation
-    nxt$theta[nws, ] <- sweep(theta_mid[nws, ], 2,
+    nxt$theta[nws, ] <- sweep(theta_mid[nws, ,drop=FALSE], 2,
                               curr$mu_group[g, ] - mu_group_mid[g, ], "+")
   }
 
