@@ -7,7 +7,10 @@
 control_multibergm(
   formula,
   constraints = ~.,
-  proposal = NULL,
+  groups = NULL,
+  proposal_update_freq = 20,
+  proposal_update_max = 1e+06,
+  init_proposals = NULL,
   aux_iters = 1000,
   n_batches = 1
 )
@@ -21,8 +24,15 @@ control_multibergm(
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
 
-\item{proposal}{A list of covariance matrices used to generate the MCMC
-proposals.}
+\item{groups}{A vector of group memberships}
+
+\item{proposal_update_freq}{How often to update the MCMC proposal 
+covariances.}
+
+\item{proposal_update_max}{When to stop adaptive the MCMC proposals.}
+
+\item{init_proposals}{A list of covariance matrices used to initialise the 
+MCMC proposals.}
 
 \item{aux_iters}{Number of internal (auxiliary) MCMC iterations used to
 simulate a network from the model.}

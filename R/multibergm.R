@@ -56,7 +56,8 @@ multibergm.formula <- function(object,
                                prior = set_priors(object, groups),
                                init = set_init(object, prior, groups),
                                control = control_multibergm(object,
-                                                            constraints),
+                                                            constraints,
+                                                            groups),
                                ...) {
 
   start_time <- Sys.time()
@@ -70,7 +71,8 @@ multibergm.formula <- function(object,
 
   if (is.null(groups))
     groups <- rep(1, n_networks)
-
+  n_groups <- length(unique(groups))
+  
   # Set up parallel options
   n_batches <- length(control$batches)
   if (n_batches == 1) {
@@ -90,26 +92,33 @@ multibergm.formula <- function(object,
 
   add_iters <- main_iters - first_iter + 1
   params <- init
+  proposals <- list(theta = control$init_proposals$theta,
+                    theta_scale = rep(0, n_networks),
+                    mu       = control$init_proposals$mu,
+                    mu_scale = rep(0, n_groups))
 
   # Preallocate acceptance counts for MCMC
-  n_groups <- length(unique(groups))
+  
   accepts <- list(theta = array(0, c(main_iters, n_networks)),
                   mu    = array(0, c(main_iters, n_groups)))
 
   pb <- txtProgressBar(min = 0, max = main_iters, style = 3)
 
+
+  
   # Run the MCMC
   for (k in seq(first_iter, main_iters)) {
     setTxtProgressBar(pb, k)
 
     curr <- subset(params, iters = k - 1L)
     curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1, 2)))
-
+    
     # Perform Gibbs update for all variables
+    # TODO: merge singlegroup and multigroup under one framework
     if (n_groups == 1) {
-      mcmc_update <- singlegroup_update(curr, prior, groups, control)
+      mcmc_update <- singlegroup_update(curr, prior, groups, proposals, control)
     } else {
-      mcmc_update <- multigroup_update(curr, prior, groups, control)
+      mcmc_update <- multigroup_update(curr, prior, groups, proposals, control)
     }
 
     params <- mcmcr::bind_iterations(params,
@@ -117,6 +126,14 @@ multibergm.formula <- function(object,
 
     accepts$theta[k, ] <- mcmc_update$accepts$theta
     accepts$mu[k, ]    <- mcmc_update$accepts$mu
+    
+    # Update RW proposals (adaptive MCMC step)
+    if (k %% control$proposal_update_freq == 0 & k < control$proposal_update_max) {
+      last_iters <- k:(k - control$proposal_update_freq + 1)
+      accept_rate <- list(theta = colMeans(accepts$theta[last_iters, ,drop=FALSE]),
+                          mu    = colMeans(accepts$mu[last_iters, ,drop=FALSE]))
+      proposals <- update_proposals(proposals, accept_rate, params, control)
+    }
 
   }
 

@@ -22,7 +22,7 @@ set_init <- function(formula, prior, groups = NULL, init = list()) {
                                prior$cov_theta$scale)
 
   if (is.null(init$theta))
-    init$theta      <- rmvnorm(n_networks, sigma = init$cov_theta)
+    init$theta       <- rmvnorm(n_networks, sigma = init$cov_theta)
 
   if (n_groups > 1) {
     if (is.null(init$cov_mu_group))

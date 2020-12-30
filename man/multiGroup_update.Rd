@@ -4,7 +4,7 @@
 \alias{multigroup_update}
 \title{MCMC update for multiple-group multi-BERGM}
 \usage{
-multigroup_update(curr, prior, groups, control)
+multigroup_update(curr, prior, groups, proposals, control)
 }
 \arguments{
 \item{curr}{A list of the current values of the model parameters}
@@ -13,8 +13,9 @@ multigroup_update(curr, prior, groups, control)
 
 \item{groups}{A vector of group memberships}
 
-\item{control}{A list of parameters set by \code{\link{control_multibergm}}
-specifying priors, proposal variances, and group labels.}
+\item{proposals}{A list of the current RW proposal parameters}
+
+\item{control}{A list of parameters set by \code{\link{control_multibergm}}}
 }
 \value{
 A list of the updated values of the model parameters and the
