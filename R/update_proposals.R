@@ -37,7 +37,7 @@ update_proposals <- function(proposals, accept_rate, params, control) {
     } else {
       proposals$mu_scale[1] <- proposals$mu_scale[1] - delta_scale
     }
-    this_sample <- as.matrix(params$mu[1, , ])
+    this_sample <- as.matrix(params$mu_pop[1, , ])
     posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
     regular_cov <- ((beta * 0.1) ^ 2) * diag(n_stats) / n_stats
     proposals$mu[1,,] <- exp(proposals$mu_scale[1]) * (posterior_cov + regular_cov)
@@ -48,7 +48,7 @@ update_proposals <- function(proposals, accept_rate, params, control) {
       } else {
         proposals$mu_scale[i] <- proposals$mu_scale[i] + delta_scale
       }
-      this_sample <- as.matrix(params$mu[1, ,i, ])
+      this_sample <- as.matrix(params$mu_group[1, ,i, ])
       posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
       regular_cov <- ((beta * 0.1) ^ 2) * diag(n_stats) / n_stats
       proposals$mu[i,,] <- exp(proposals$mu_scale[i]) * (posterior_cov + regular_cov)

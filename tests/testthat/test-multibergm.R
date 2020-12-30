@@ -1,7 +1,7 @@
 set.seed(1)
 n_nets <- 10L
 n_nodes <- 10L
-n_iters <- 5L
+n_iters <- 40L
 
 nets <- lapply(seq_len(n_nets), function(x) network(n_nodes, directed = FALSE))
 
