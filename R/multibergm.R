@@ -87,9 +87,9 @@ multibergm.formula <- function(object,
 
   # Preallocate and initialise variables for MCMC
   first_iter <- dim(init$theta)[1] + 1
-  # TODO: change this to abind::afill
 
   add_iters <- main_iters - first_iter + 1
+  # TODO: change this to abind::afill and preallocate
   params <- init
   proposals <- list(theta = control$init_proposals$theta,
                     theta_scale = rep(0, n_networks),

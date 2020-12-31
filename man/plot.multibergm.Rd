@@ -4,7 +4,7 @@
 \alias{plot.multibergm}
 \title{Plot BERGM posterior output}
 \usage{
-\method{plot}{multibergm}(x, param = "mu_pop", burn_in = 0L, thin = 1L, ...)
+\method{plot}{multibergm}(x, param = "mu_pop", burn_in = 0L, thin = 1L, ind = 1L, ...)
 }
 \arguments{
 \item{x}{A \link{multibergm} object}
@@ -15,6 +15,8 @@
 samples (pre-thinning)}
 
 \item{thin}{Amount of thinning to apply to the posterior samples}
+
+\item{ind}{Indices to subset when param is theta or mu_pop}
 
 \item{...}{Additional parameters to be passed on to lower-level functions.}
 }
