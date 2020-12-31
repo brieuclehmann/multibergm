@@ -21,6 +21,7 @@
 #' @param proposal_update_freq How often to update the MCMC proposal 
 #'   covariances.
 #' @param proposal_update_max When to stop adaptive the MCMC proposals.
+#' @param proposal_rescale When to reset adaptation following an initial burn_in
 #'
 #' @return A list containing the following control parameters:
 #'   \itemize{
@@ -43,7 +44,8 @@ control_multibergm <- function(formula,
                                constraints = ~.,
                                groups = NULL,
                                proposal_update_freq = 20,
-                               proposal_update_max = 1e6,
+                               proposal_update_max = 1000,
+                               proposal_rescale  = 500,
                                init_proposals   = NULL,
                                aux_iters   = 1000,
                                n_batches   = 1) {
@@ -100,6 +102,7 @@ control_multibergm <- function(formula,
        init_proposals       = init_proposals,
        proposal_update_freq = proposal_update_freq,
        proposal_update_max  = proposal_update_max,
+       proposal_rescale     = proposal_rescale,
        batches              = batches,
        model                = model,
        clists               = clists,

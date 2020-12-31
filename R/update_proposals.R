@@ -13,7 +13,13 @@
 update_proposals <- function(proposals, accept_rate, params, control) {
   
   beta <- 0.05
-  delta_scale <- 100 * min(0.01, 1 / sqrt(mcmcr::niters(params$theta)))
+  k <- mcmcr::niters(params$theta)
+  delta_scale <- 10 * min(0.05, 1 / sqrt(k))
+  if (k > control$proposal_rescale) {
+    # Ignore initial posterior samples when adapting proposals
+    params <- subset(params, iters = seq(control$proposal_rescale, k))
+  }
+
   # Update theta proposals
   n_networks <- dim(proposals$theta)[1]
   n_stats    <- dim(proposals$theta)[2]
@@ -44,9 +50,9 @@ update_proposals <- function(proposals, accept_rate, params, control) {
   } else {
     for (i in 1:n_groups) {
       if (accept_rate$mu[i] > 0.3) {
-        proposals$mu_scale[i] <- proposals$mu_scale[i] - delta_scale
-      } else {
         proposals$mu_scale[i] <- proposals$mu_scale[i] + delta_scale
+      } else {
+        proposals$mu_scale[i] <- proposals$mu_scale[i] - delta_scale
       }
       this_sample <- as.matrix(params$mu_group[1, ,i, ])
       posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
@@ -54,6 +60,6 @@ update_proposals <- function(proposals, accept_rate, params, control) {
       proposals$mu[i,,] <- exp(proposals$mu_scale[i]) * (posterior_cov + regular_cov)
     }
   }
-
+  
   proposals
 }
