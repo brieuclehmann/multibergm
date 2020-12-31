@@ -1,0 +1,20 @@
+> summary(fit)
+
+ Posterior Density Estimate for Model: 
+y ~ edges + gwesp() 
+ 
+                      Mean     SD Naive SE Time-series SE
+mu1 (edges)       -0.02132 1.1477   0.2095         0.2095
+mu2 (gwesp)       -0.16554 0.8104   0.1480         0.1480
+mu3 (gwesp.decay) -0.05379 0.8691   0.1587         0.1587
+
+                    2.5%     25%      50%    75% 97.5%
+mu1 (edges)       -2.396 -0.4524 -0.05038 0.8427 1.746
+mu2 (gwesp)       -1.291 -0.8284 -0.37558 0.5524 1.223
+mu3 (gwesp.decay) -1.476 -0.6625 -0.08344 0.5839 1.320
+
+ Theta acceptance rate: 
+0.455 (0.345, 0.621)
+ Mu acceptance rate: 
+0.448 (0.448, 0.448) 
+

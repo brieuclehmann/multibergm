@@ -53,7 +53,7 @@ multibergm.formula <- function(object,
                                constraints = ~.,
                                groups = NULL,
                                main_iters = 1000L,
-                               prior = set_priors(object, groups),
+                               prior = set_priors(object, control, groups),
                                init = set_init(object, prior, groups),
                                control = control_multibergm(object,
                                                             constraints,
@@ -67,7 +67,6 @@ multibergm.formula <- function(object,
   # TODO: add checks for inputs
   networks <- statnet.common::eval_lhs.formula(object)
   n_networks <- length(networks)
-  #prior <- set_priors(object, groups, prior)
 
   if (is.null(groups))
     groups <- rep(1, n_networks)

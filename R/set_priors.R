@@ -15,9 +15,9 @@
 #' @export
 #' @importFrom statnet.common eval_lhs.formula
 
-set_priors <- function(formula, groups = NULL, prior = list()) {
+set_priors <- function(formula, control, groups = NULL, prior = list()) {
 
-  n_terms  <- length(attr(terms(formula), "term.labels"))
+  n_terms  <- nparam(control$model)
   if (is.null(groups)) {
     networks <- statnet.common::eval_lhs.formula(formula)
     groups <- rep(1, length(networks))

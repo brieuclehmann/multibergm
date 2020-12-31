@@ -1,0 +1,16 @@
+> summary(fit)
+
+ Posterior Density Estimate for Model: 
+y ~ edges 
+ 
+                [,1]  [,2]   [,3]   [,4]
+mu1 (edges) -0.02132 1.148 0.2095 0.2095
+
+              [,1]    [,2]     [,3]   [,4]  [,5]
+mu1 (edges) -2.396 -0.4524 -0.05038 0.8427 1.746
+
+ Theta acceptance rate: 
+0.472 (0.345, 0.586)
+ Mu acceptance rate: 
+0.621 (0.621, 0.621) 
+

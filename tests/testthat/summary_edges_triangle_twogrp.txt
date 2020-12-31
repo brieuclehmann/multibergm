@@ -1,0 +1,22 @@
+> summary(fit)
+
+ Posterior Density Estimate for Model: 
+y ~ edges + triangles 
+ 
+                       Mean     SD Naive SE Time-series SE
+mu1 (edges, G1)    -0.02132 1.1477   0.2095         0.2095
+mu1 (edges, G2)    -0.16554 0.8104   0.1480         0.1480
+mu2 (triangle, G1) -0.05379 0.8691   0.1587         0.1587
+mu2 (triangle, G2) -0.11549 0.9419   0.1720         0.1720
+
+                     2.5%     25%      50%    75% 97.5%
+mu1 (edges, G1)    -2.396 -0.4524 -0.05038 0.8427 1.746
+mu1 (edges, G2)    -1.291 -0.8284 -0.37558 0.5524 1.223
+mu2 (triangle, G1) -1.476 -0.6625 -0.08344 0.5839 1.320
+mu2 (triangle, G2) -1.549 -0.8883 -0.17574 0.4213 1.609
+
+ Theta acceptance rate: 
+0.455 (0.345, 0.621)
+ Mu acceptance rate: 
+0.466 (0.448, 0.483) 
+
