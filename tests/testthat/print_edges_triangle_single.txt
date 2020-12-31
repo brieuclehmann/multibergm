@@ -1,8 +1,8 @@
-> fit_single
+> fit
 A multibergm fit of 10 networks in 1 group.
 
 Model formula:
-nets ~ edges
+nets ~ edges + triangles
 
 Constraints:
 ~.

@@ -4,13 +4,15 @@
 \alias{set_priors}
 \title{Set priors for multibergm}
 \usage{
-set_priors(formula, groups = NULL, prior = list())
+set_priors(formula, control, groups = NULL, prior = list())
 }
 \arguments{
 \item{formula}{An \R \code{\link{formula}} object, of the form
 \code{y ~ <model terms>}, where \code{y} is a
 \code{\link[network]{network}} object or a
 \code{\link[ergm]{network.list}} object.}
+
+\item{control}{A list of parameters set by \code{\link{control_multibergm}}}
 
 \item{groups}{A vector of group memberships}
 

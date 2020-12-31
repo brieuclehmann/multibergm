@@ -25,7 +25,7 @@ plot.multibergm <- function(x,
   output <- get(param, x$params)
   output <- abind::adrop(unclass(output), 1)
 
-  model_terms <- x$control$model$coef.names
+  model_terms <- param_names(x$control$model)
   n_dim <- length(dim(output))
   dim_names <- vector("list", n_dim)
   dim_names[[n_dim]] <- model_terms

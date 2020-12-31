@@ -33,10 +33,8 @@ summary.multibergm <- function(object,
 
   object$accepts$theta <- object$accepts$theta[post_iters, ,drop=FALSE]
   object$accepts$mu <- object$accepts$mu[post_iters, ,drop=FALSE]
-  model_terms <- object$control$model$coef.names
-  n_terms     <- length(attr(terms(object$formula), "term.labels"))
-  
-  
+  model_terms <- param_names(object$control$model)
+  n_terms     <- nparam(object$control$model)
 
   cat("\n", "Posterior Density Estimate for Model: \ny ~",
       paste(object$formula[3]), "\n", "\n")
@@ -58,23 +56,23 @@ summary.multibergm <- function(object,
     print(table2, digits = 4)
 
   } else {
-    for (g in 1:n_groups) {
-      ff_mu   <- mcmcr::as.mcmc(output, start = burn_in + 1, thin = thin)
-
-      table1 <- summary(ff_mu)$statistics
-      rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ", G",
-                       rep(g, each = n_terms), ")")
-      table1 <- matrix(table1[g,], n_terms,
-                       dimnames = list(rnames, colnames(table1)))
-
-      table2 <- summary(ff_mu)$quantiles
-      table2 <- matrix(table2[g,], n_terms,
-                       dimnames = list(rnames, colnames(table2)))
-
-      print(table1, digits = 4)
-      cat("\n")
-      print(table2, digits = 4)
-    }
+    
+    ff_mu   <- mcmcr::as.mcmc(output, start = burn_in + 1, thin = thin)
+    
+    table1 <- summary(ff_mu)$statistics
+    rnames <- paste0("mu", rep(seq_len(n_terms), each = n_groups),
+                     " (", rep(model_terms, each = n_groups), 
+                     ", G", rep(1:n_groups, n_terms), ")")
+    table1 <- matrix(table1, n_terms * n_groups,
+                     dimnames = list(rnames, colnames(table1)))
+    
+    table2 <- summary(ff_mu)$quantiles
+    table2 <- matrix(table2, n_terms * n_groups,
+                     dimnames = list(rnames, colnames(table2)))
+    
+    print(table1, digits = 4)
+    cat("\n")
+    print(table2, digits = 4)
   }
 
   # Print acceptance rates

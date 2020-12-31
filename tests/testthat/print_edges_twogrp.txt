@@ -1,0 +1,9 @@
+> fit
+A multibergm fit of 10 networks in 2 groups.
+
+Model formula:
+nets ~ edges
+
+Constraints:
+~.
+

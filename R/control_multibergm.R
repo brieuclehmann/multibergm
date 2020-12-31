@@ -57,7 +57,14 @@ control_multibergm <- function(formula,
     stop("Input must be a network or list of networks")
 
   n_nets <- length(networks)
-  n_terms    <- length(attr(terms(formula), "term.labels"))
+  
+  # Set up ergm parameters
+  model       <- ergm_model(formula, networks[[1]])
+  clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
+  mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
+                                networks[[1]])
+  n_terms    <- nparam(model)
+  
   if (is.null(groups)) {
     n_groups <- 1
   } else {
@@ -88,12 +95,6 @@ control_multibergm <- function(formula,
     batches <- split(seq_len(n_nets), cut(seq_len(n_nets),
                                       n_batches, labels = FALSE))
   }
-
-  # Set up ergm parameters
-  model       <- ergm_model(formula, networks[[1]])
-  clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
-  mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
-                               networks[[1]])
 
   list(aux_iters            = aux_iters,
        init_proposals       = init_proposals,
