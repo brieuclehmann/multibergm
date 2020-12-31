@@ -9,7 +9,8 @@ control_multibergm(
   constraints = ~.,
   groups = NULL,
   proposal_update_freq = 20,
-  proposal_update_max = 1e+06,
+  proposal_update_max = 1000,
+  proposal_rescale = 500,
   init_proposals = NULL,
   aux_iters = 1000,
   n_batches = 1
@@ -30,6 +31,8 @@ on the support of the distribution of the networks being simulated.}
 covariances.}
 
 \item{proposal_update_max}{When to stop adaptive the MCMC proposals.}
+
+\item{proposal_rescale}{When to reset adaptation following an initial burn_in}
 
 \item{init_proposals}{A list of covariance matrices used to initialise the 
 MCMC proposals.}
