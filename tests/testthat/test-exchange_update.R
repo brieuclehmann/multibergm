@@ -24,10 +24,11 @@ test_that("exchange_update() returns correct dimension", {
   prop <- rmvnorm(n, rep(0, p))
   prior_cov <- diag(1, p)
   delta <- rmvnorm(n, rep(0, p))
+  etamap <- NULL
 
-  expect_equal(dim(exchange_update(curr, prop, delta, prior_cov)),
+  expect_equal(dim(exchange_update(curr, prop, delta, prior_cov, etamap)),
                c(n, p))
   expect_equal(dim(exchange_update(curr[1, ], prop[1, ],
-                                   delta[1, , drop = FALSE], prior_cov)),
+                                   delta[1, , drop = FALSE], prior_cov, etamap)),
                NULL)
 })

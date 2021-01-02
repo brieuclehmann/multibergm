@@ -66,6 +66,7 @@ control_multibergm <- function(formula,
   mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
                                 networks[[1]])
   n_terms    <- nparam(model)
+  etamap     <- ergm.etamap(model)
   
   if (is.null(groups)) {
     n_groups <- 1
@@ -106,6 +107,7 @@ control_multibergm <- function(formula,
        batches              = batches,
        model                = model,
        clists               = clists,
-       mh_proposals         = mh_proposals)
+       mh_proposals         = mh_proposals,
+       etamap               = etamap)
 
 }
