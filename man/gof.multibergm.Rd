@@ -7,6 +7,7 @@
 \method{gof}{multibergm}(
   object,
   coefs = NULL,
+  param = NULL,
   sample_size = 100L,
   aux_iters = 1.5 * object$control$aux_iters,
   burn_in = 0L,
@@ -20,6 +21,8 @@
 \item{coefs}{Optional set of model coefficients to use for network
 simulation. The default is to use the posterior samples of the
 population-level parameter.}
+
+\item{param}{Multibergm parameter to be summarised}
 
 \item{sample_size}{Number of networks to be simulated and compared to the
 observed networks.}

@@ -10,6 +10,8 @@
 #'   \code{\link{ergm_wrapper}}
 #' @param prior_mean Prior mean of parameter
 #' @param prior_cov Prior covariance of parameter
+#' @param etamap The list of values that constitutes the theta-> eta mapping and
+#'   is returned by ergm.etamap
 #' @param labels Labels specifying which networks to associate with
 #'   each row of the the parameter matrices
 #'
@@ -20,6 +22,7 @@ exchange_update <- function(curr,
                             prop,
                             delta,
                             prior_cov,
+                            etamap,
                             prior_mean = double(ncol(curr)),
                             labels = seq_len(nrow(curr))) {
 
@@ -35,12 +38,23 @@ exchange_update <- function(curr,
   n   <- nrow(curr)
   new <- curr
 
+  # eta-theta mapping for curved ERGMs
+  if (length(etamap$curved) > 0) {
+    curr_eta <- t(apply(curr, 1, ergm.eta, etamap))
+    prop_eta <- t(apply(prop, 1, ergm.eta, etamap))
+  } else {
+    curr_eta <- curr
+    prop_eta <- prop
+  }
+
+  
   for (i in seq_len(n)) {
     pr_prop <- dmvnorm(prop[i, ], prior_mean, prior_cov, log = TRUE)
     pr_curr <- dmvnorm(curr[i, ], prior_mean, prior_cov, log = TRUE)
+    pr_diff <- pr_prop - pr_curr
 
     this_delta <- colSums(delta[which(labels == i), , drop = FALSE])
-    beta      <- sum((curr[i, ] - prop[i, ]) * this_delta) + pr_prop - pr_curr
+    beta       <- sum((curr_eta[i, ] - prop_eta[i, ]) * this_delta) + pr_diff
 
     if (beta >= log(runif(1)))
       new[i, ] <- prop[i, ]

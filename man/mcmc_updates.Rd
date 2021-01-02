@@ -13,6 +13,7 @@ exchange_update(
   prop,
   delta,
   prior_cov,
+  etamap,
   prior_mean = double(ncol(curr)),
   labels = seq_len(nrow(curr))
 )
@@ -39,6 +40,9 @@ ergm_wrapper(coefs, control)
 \code{\link{ergm_wrapper}}}
 
 \item{prior_cov}{Prior covariance of parameter}
+
+\item{etamap}{The list of values that constitutes the theta-> eta mapping and
+is returned by ergm.etamap}
 
 \item{prior_mean}{Prior mean of parameter}
 

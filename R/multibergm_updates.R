@@ -35,7 +35,7 @@ singlegroup_update <- function(curr, prior, groups, proposals, control) {
   coefs       <- sweep(theta_prop, 2, curr$mu_pop, "+")
   delta_theta <- ergm_wrapper(coefs, control)
   theta_mid   <- exchange_update(curr$theta, theta_prop,
-                                 delta_theta, nxt$cov_theta)
+                                 delta_theta, nxt$cov_theta, control$etamap)
 
   # Update population-level mean parameter in centered parameterisation
   mu_pop_curr <- sweep(theta_mid, 2, curr$mu_pop, "+")
@@ -51,7 +51,7 @@ singlegroup_update <- function(curr, prior, groups, proposals, control) {
   coefs        <- sweep(nxt$theta, 2, mu_pop_prop, "+")
   delta_mu     <- ergm_wrapper(coefs, control)
   nxt$mu_pop   <- exchange_update(mu_pop_mid, mu_pop_prop, delta_mu,
-                                  prior$mu_pop$cov,
+                                  prior$mu_pop$cov, control$etamap,
                                   prior_mean = prior$mu_pop$mean,
                                   labels = groups)
 
@@ -110,7 +110,7 @@ multigroup_update <- function(curr, prior, groups, proposals, control) {
 
   delta_theta <- ergm_wrapper(coefs, control)
   theta_mid   <- exchange_update(curr$theta, theta_prop,
-                                 delta_theta, nxt$cov_theta)
+                                 delta_theta, nxt$cov_theta, control$etamap)
 
   # Update group-level mean parameters in centered parameterisation
   mu_group_mid <- array(NA, dim(curr$mu_group))
@@ -137,8 +137,8 @@ multigroup_update <- function(curr, prior, groups, proposals, control) {
 
   delta_mu     <- ergm_wrapper(coefs, control)
   nxt$mu_group <- exchange_update(mu_group_mid, mu_group_prop, delta_mu,
-                                  nxt$cov_mu_group, prior_mean = nxt$mu_pop,
-                                  labels = groups)
+                                  nxt$cov_mu_group, control$etamap, 
+                                  prior_mean = nxt$mu_pop, labels = groups)
 
   # Track acceptance counts
   accepts$theta <- apply(theta_mid != curr$theta, 1, any)
