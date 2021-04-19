@@ -248,8 +248,6 @@ plot(fit2)
 Another important aspect of the MCMC algorithm are the Metropolis proposals. 
 These control how efficiently the chain explores the parameter space. 
 
-**BL: I'm thinking of implementing an adaptive MCMC so that users don't need to worry about tuning proposals...**
-
 # Other functionality
 
 ## Parallel computation
