@@ -20,6 +20,7 @@ formulas <- c(ergm_formula_one_stat, ergm_formula_two_stat, ergm_formula_curved)
 ### RUN TESTS FOR SINGLE GROUP
 
 for (f in formulas) {
+  set.seed(1)
   fit <- multibergm(f, main_iters = n_iters)
   
   # Main function
@@ -39,6 +40,32 @@ for (f in formulas) {
   test_that(test_name, {
     verify_output(test_path(txt_path), fit)
   })
+  
+  # Plots
+  if (f != ergm_formula_curved) { # Not reproducible for curved ERGMs
+    # MCMC plots
+    test_name <- paste("plot.multibergm() returns correct output for",
+                       format(fit$formula), "with a single group")
+    test_that(test_name, {
+      ergm_terms <- sapply(fit$control$model$terms, function(x) x$name)
+      plot_name <- paste("plot-single-group", paste(ergm_terms, collapse = "-"), 
+                         sep = "-")
+      p_out <- plot(fit)
+      vdiffr::expect_doppelganger(plot_name, p_out, path = "multibergm")
+    })
+    
+    # GOF plots
+    test_name <- paste("gof.multibergm() returns correct output for",
+                       format(fit$formula), "with a single group")
+    test_that(test_name, {
+      ergm_terms <- sapply(fit$control$model$terms, function(x) x$name)
+      plot_name <- paste("gof-single-group", paste(ergm_terms, collapse = "-"), 
+                         sep = "-")
+      p_out <- gof(fit, sample_size = 10)
+      vdiffr::expect_doppelganger(plot_name, p_out, path = "multibergm")
+    })
+  }
+
   
   # Summary
   test_name <- paste("summary.multibergm() returns correct output for",
@@ -78,6 +105,31 @@ for (f in formulas) {
   test_that(test_name, {
     verify_output(test_path(txt_path), fit)
   })
+  
+  # Plots
+  if (f != ergm_formula_curved) { # Not reproducible for curved ERGMs
+    # MCMC plots
+    test_name <- paste("plot.multibergm() returns correct output for",
+                       format(fit$formula), "with two groups")
+    test_that(test_name, {
+      ergm_terms <- sapply(fit$control$model$terms, function(x) x$name)
+      plot_name <- paste("plot-two-group", paste(ergm_terms, collapse = "-"), 
+                         sep = "-")
+      p_out <- plot(fit, param = "mu_group", ind = c(1, 2))
+      vdiffr::expect_doppelganger(plot_name, p_out, path = "multibergm")
+    })
+    
+    # GOF plots
+    test_name <- paste("gof.multibergm() returns correct output for",
+                       format(fit$formula), "with two groups")
+    test_that(test_name, {
+      ergm_terms <- sapply(fit$control$model$terms, function(x) x$name)
+      plot_name <- paste("gof-two-group", paste(ergm_terms, collapse = "-"), 
+                         sep = "-")
+      p_out <- gof(fit, sample_size = 10)
+      vdiffr::expect_doppelganger(plot_name, p_out, path = "multibergm")
+    })
+  }
   
   # Summary
   test_name <- paste("summary.multibergm() returns correct format for",
