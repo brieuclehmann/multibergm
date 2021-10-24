@@ -5,7 +5,7 @@
 #' including MCMC proposal covariance, auxiliary iterations for ERGM simulation,
 #' and number of cores to be used in parallel.
 #'
-#' @param formula An \R \code{\link{formula}} object, of the form
+#' @param ergm_formula An \R \code{\link{formula}} object, of the form
 #'   \code{y ~ <model terms>}, where \code{y} is a
 #'   \code{\link[network]{network}} object or a
 #'   \code{\link[ergm]{network.list}} object.
@@ -40,24 +40,25 @@
 #' @import ergm
 #' @importFrom stats terms
 #' @export
-control_multibergm <- function(formula,
-                               constraints = ~.,
-                               groups = NULL,
+
+control_multibergm <- function(ergm_formula,
+                               mod_mat,
+                               constraints   = ~ . ,
                                proposal_update_freq = 20,
                                proposal_update_max = 1000,
                                proposal_rescale  = 500,
                                init_proposals   = NULL,
-                               aux_iters   = 1000,
-                               n_batches   = 1) {
+                               aux_iters     = 1000, 
+                               n_batches     = 1) {
 
-  networks <- statnet.common::eval_lhs.formula(formula)
+  networks <- statnet.common::eval_lhs.formula(ergm_formula)
 
   # For compatibility with a single network
   if (is.network(networks))  networks <- list(networks)
 
   if (!is.network(networks[[1]]))
     stop("Input must be a network or list of networks")
-
+  
   n_nets <- length(networks)
   
   # Set up ergm parameters
@@ -66,6 +67,7 @@ control_multibergm <- function(formula,
   mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
                                 networks[[1]])
   n_terms    <- nparam(model)
+  n_vars     <- ncol(mod_mat)
   etamap     <- ergm.etamap(model)
   
   if (is.null(groups)) {
@@ -82,14 +84,14 @@ control_multibergm <- function(formula,
       init_proposals$theta[i, , ] <- diag(0.1^2, n_terms)
     }
   }
-
+  
+  #TODO: FIX THIS
   if (is.null(init_proposals$mu)) {
     init_proposals$mu    <- array(NA, c(n_groups, n_terms, n_terms))
       for (i in 1:n_groups) {
         init_proposals$mu[i, , ] <- diag(0.1^2, n_terms)
       }
   }
-
 
   # Specify network batching for parallelisation
   if (n_batches == 1) {
@@ -99,15 +101,22 @@ control_multibergm <- function(formula,
                                       n_batches, labels = FALSE))
   }
 
-  list(aux_iters            = aux_iters,
+  # Set up ergm parameters
+  model       <- ergm_model(ergm_formula, networks[[1]])
+  Clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
+  MHproposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
+                               networks[[1]])
+
+  list(aux_iters   = aux_iters,
        init_proposals       = init_proposals,
        proposal_update_freq = proposal_update_freq,
        proposal_update_max  = proposal_update_max,
        proposal_rescale     = proposal_rescale,
-       batches              = batches,
-       model                = model,
-       clists               = clists,
-       mh_proposals         = mh_proposals,
+       batches     = batches,
+       model       = model,
+       Clists      = Clists,
+       MHproposals = MHproposals,
+       mod_mat     = mod_mat,
        etamap               = etamap)
 
 }

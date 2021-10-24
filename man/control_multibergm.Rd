@@ -5,9 +5,9 @@
 \title{Set multibergm MCMC options}
 \usage{
 control_multibergm(
-  formula,
+  ergm_formula,
+  mod_mat,
   constraints = ~.,
-  groups = NULL,
   proposal_update_freq = 20,
   proposal_update_max = 1000,
   proposal_rescale = 500,
@@ -17,15 +17,13 @@ control_multibergm(
 )
 }
 \arguments{
-\item{formula}{An \R \code{\link{formula}} object, of the form
+\item{ergm_formula}{An \R \code{\link{formula}} object, of the form
 \code{y ~ <model terms>}, where \code{y} is a
 \code{\link[network]{network}} object or a
 \code{\link[ergm]{network.list}} object.}
 
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
-
-\item{groups}{A vector of group memberships}
 
 \item{proposal_update_freq}{How often to update the MCMC proposal 
 covariances.}
@@ -42,6 +40,8 @@ simulate a network from the model.}
 
 \item{n_batches}{Number of computing cores available to simulate networks
 from the model in parallel.}
+
+\item{groups}{A vector of group memberships}
 }
 \value{
 A list containing the following control parameters:

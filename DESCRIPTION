@@ -30,10 +30,11 @@ Imports:
     ggplot2,
     coda,
     cowplot,
-    network
+    network,
+    matrixNormal
 License: GPL-3
 LazyData: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 Suggests: 
     knitr,

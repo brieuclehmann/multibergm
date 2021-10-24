@@ -5,31 +5,37 @@
 #' explicitly specified, set_priors() uses default (vague) priors. A
 #' validity check is also performed to ensure the compatibility of the priors
 #' with the model.
-#'
+#' 
 #' @inheritParams multibergm
-#' @param formula An \R \code{\link{formula}} object, of the form
+#' 
+#' @param ergm_formula An \R \code{\link{formula}} object, of the form
 #'   \code{y ~ <model terms>}, where \code{y} is a
 #'   \code{\link[network]{network}} object or a
 #'   \code{\link[ergm]{network.list}} object.
-#'
+#' @param prior A list of explicit prior specifications.
+#' 
 #' @export
 #' @importFrom statnet.common eval_lhs.formula
 
-set_priors <- function(formula, control, groups = NULL, prior = list()) {
+set_priors <- function(ergm_formula,
+                       model_matrix,
+                       control,
+                       hyper_model_matrix = NULL,
+                       prior = list()) {
 
-  n_terms  <- nparam(control$model)
-  if (is.null(groups)) {
-    networks <- statnet.common::eval_lhs.formula(formula)
-    groups <- rep(1, length(networks))
+  n_terms <- length(attr(terms(ergm_formula), "term.labels"))
+  n_vars  <- ncol(model_matrix)
+  
+  # Model: \theta = X\mu + \epsilon
+  
+  # Set priors for \mu parameter
+  if (is.null(prior$mu$mean))
+    prior$mu$mean <- matrix(0, n_vars, n_terms)
+
+  if (is.null(prior$mu$cov)) {
+    #prior$mu$cov <- array(diag(100, n_terms), c(n_terms, n_terms, n_vars))
+    prior$mu$cov <- diag(100, n_vars)
   }
-  n_groups <- length(unique(groups))
-
-  # Set priors for population mean parameter
-  if (is.null(prior$mu_pop$mean))
-    prior$mu_pop$mean <- rep(0, n_terms)
-
-  if (is.null(prior$mu_pop$cov))
-    prior$mu_pop$cov <- diag(100, n_terms)
 
   # Set priors for network-level covariance parameter
   if (is.null(prior$cov_theta$df))
@@ -38,17 +44,18 @@ set_priors <- function(formula, control, groups = NULL, prior = list()) {
   if (is.null(prior$cov_theta$scale))
     prior$cov_theta$scale <- diag(n_terms)
 
-  if (n_groups > 1) {
+  if (!is.null(hyper_model_matrix)) {
     # Set priors for group-level covariance parameter
+    #TODO: figure this out...
+    n_hyper <- ncol(hyper_model_matrix)
+    if (is.null(prior$cov_mu$df))
+      prior$cov_mu$df <- rep(n_terms + 1, n_hyper)
 
-    if (is.null(prior$cov_mu_group$df))
-      prior$cov_mu_group$df <- n_terms + 1
-
-    if (is.null(prior$cov_mu_group$scale))
-      prior$cov_mu_group$scale <- diag(n_terms)
+    if (is.null(prior$cov_mu$scale))
+      prior$cov_mu$scale <- array(diag(n_terms), c(n_terms, n_terms, n_hyper))
   }
 
-  check_prior(prior, n_terms, n_groups)
+  #check_prior(prior, n_terms, n_groups)
 
   prior
 }
@@ -66,18 +73,18 @@ set_priors <- function(formula, control, groups = NULL, prior = list()) {
 
 check_prior <- function(prior, n_terms, n_groups) {
 
-  check_prior_mean(prior$mu_pop$mean, n_terms)
+  check_prior_mean(prior$mu$mean, n_terms)
 
-  check_prior_cov(prior$mu_pop$cov, n_terms)
+  check_prior_cov(prior$mu$cov, n_terms)
 
   check_prior_df(prior$cov_theta$df, n_terms)
 
   check_prior_scale(prior$cov_theta$scale, n_terms)
 
   if (n_groups > 1) {
-    check_prior_df(prior$cov_mu_group$df, n_terms)
+    check_prior_df(prior$cov_mu$df, n_terms)
 
-    check_prior_scale(prior$cov_mu_group$scale, n_terms)
+    check_prior_scale(prior$cov_mu$scale, n_terms)
   }
 
   invisible(NULL)

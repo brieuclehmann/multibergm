@@ -4,10 +4,10 @@
 \alias{plot.multibergm}
 \title{Plot BERGM posterior output}
 \usage{
-\method{plot}{multibergm}(x, param = "mu_pop", burn_in = 0L, thin = 1L, ind = 1L, ...)
+\method{plot}{multibergm}(object, param = "mu", burn_in = 0L, thin = 1L, ind = 1L, ...)
 }
 \arguments{
-\item{x}{A \link{multibergm} object}
+\item{object}{A \link{multibergm} object}
 
 \item{param}{Multibergm parameter to be summarised}
 
@@ -19,6 +19,8 @@ samples (pre-thinning)}
 \item{ind}{Indices to subset when param is theta or mu_pop}
 
 \item{...}{Additional parameters to be passed on to lower-level functions.}
+
+\item{x}{A \link{multibergm} object}
 }
 \value{
 Outputs a density plot, trace plot, and autocorrelation plot for
