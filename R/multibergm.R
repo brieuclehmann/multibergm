@@ -20,7 +20,8 @@
 #' @return A list containing the following elements:
 #'   \itemize{
 #'     \item \code{networks} - to which the model was fit
-#'     \item \code{formula} - specifiying the ERGM
+#'     \item \code{ergm_formula} - specifying the ERGM
+#'     \item \code{model_formula} - specifying the linear model relating network covariates to ERGM summary statistics
 #'     \item \code{constraints} - used to fix any summary statistics
 #'     \item \code{main_iters} - the number of MCMC iterations used
 #'     \item \code{control} parameters used to fit the model
@@ -44,22 +45,24 @@ multibergm <- function(object, ...) {
 #' @describeIn multibergm S3 method for class 'formula'
 #' @export
 multibergm.formula <- function(object,
-                               constraints = ~.,
-                               groups = NULL,
+                               model_formula = ~ 1,
+                               constraints = ~ .,
                                main_iters = 1000L,
-                               prior = set_priors(object, groups),
-                               init = set_init(object, prior, groups),
-                               control = control_multibergm(object, 
-                                                            constraints)) {
+                               model_matrix = get_model_matrix(object, 
+                                                               model_formula),
+                               control = control_multibergm(object,
+                                                            model_formula,
+                                                            constraints),
+                               prior = set_priors(object, 
+                                                  model_matrix, 
+                                                  control),
+                               init = set_init(object, prior, model_matrix)) {
 
   start_time <- Sys.time()
   main_iters <- as.integer(main_iters)
   # TODO: add check for constraints
   networks <- statnet.common::eval_lhs.formula(object)
   n_networks <- length(networks)
-  
-  if (is.null(groups))
-    groups <- rep(1, n_networks)
 
   # Set up parallel options
   n_batches <- length(control$batches)
@@ -86,9 +89,9 @@ multibergm.formula <- function(object,
   params <- init
 
   # Preallocate acceptance counts for MCMC
-  n_groups <- length(unique(groups))
+  n_vars <- nrow(model_matrix)
   accepts <- list(theta = array(0, c(main_iters, n_networks)),
-                  mu = array(0, c(main_iters, n_groups)))
+                  mu = array(0, c(main_iters, n_vars)))
 
   pb <- txtProgressBar(min = 0, max = main_iters, style = 3)
 
@@ -96,24 +99,25 @@ multibergm.formula <- function(object,
   for (k in seq(first_iter, main_iters)) {
     setTxtProgressBar(pb, k)
 
-    curr <- subset(params, iterations = k - 1L)
-    curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1,2)))
+    curr <- subset(params, iters = k - 1L)
+    curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1, 2)))
 
     # Perform Gibbs update for all variables
-    if (n_groups == 1) {
-      mcmcUpdate <- singleGroup_update(curr, prior, groups, control)
-    } else {
-      mcmcUpdate <- multiGroup_update(curr, prior, groups, control)
-    }
+    mcmc_update <- asis_update(curr, prior, model_matrix, control)
+    #if (n_vars == 1) {
+    #  mcmc_update <- single_var_update(curr, prior, model_matrix, control)
+    #} else {
+    #  mcmc_update <- multi_var_update(curr, prior, model_matrix, control)
+    #}
     
     # Assign values and acceptance counts for this iteration
     # for (x in names(params))
-    #   params[[x]][slice.index(params[[x]],1) == k] <- mcmcUpdate$params[[x]]
+    #   params[[x]][slice.index(params[[x]],1) == k] <- mcmc_update$params[[x]]
     
-    params <- mcmcr::bind_iterations(params, mcmcr::as.mcmcr(mcmcUpdate$params))
+    params <- mcmcr::bind_iterations(params, mcmcr::as.mcmcr(mcmc_update$params))
 
-    accepts$theta[k, ] <- mcmcUpdate$accepts$theta
-    accepts$mu[k, ]    <- mcmcUpdate$accepts$mu
+    accepts$theta[k, ] <- mcmc_update$accepts$theta
+    accepts$mu[k, ]    <- mcmc_update$accepts$mu
 
   }
 
@@ -121,9 +125,9 @@ multibergm.formula <- function(object,
 
   end_time <- Sys.time()
 
-  out = list(networks = networks, formula = object, groups = groups,
+  out = list(networks = networks, formula = object,
              main_iters = main_iters, control = control, prior = prior,
-             accepts = accepts, params = params,
+             accepts = accepts, params = params, model_matrix = model_matrix,
              constraints = constraints, time = end_time - start_time)
 
   class(out) <- "multibergm"
@@ -149,6 +153,23 @@ multibergm.multibergm <- function(object, main_iters = 1000) {
 
     new_iters <- main_iters + old_iters
 
-    multibergm.formula(object$formula, object$constraints,
-                       new_iters, control)
+    multibergm.formula(object$formula,
+                       object$model_formula,
+                       object$constraints,
+                       new_iters, 
+                       control)
+}
+
+
+
+get_model_matrix <- function(ergm_formula, model_formula) {
+  networks <- statnet.common::eval_lhs.formula(ergm_formula)
+  net_attributes <- unique(c(sapply(networks, list.network.attributes)))
+  
+  net_df <- lapply(networks, function(x) {
+    sapply(net_attributes, function(y) x %n% y)
+  })
+  net_df <- as.data.frame(do.call(rbind, net_df))
+  
+  model.matrix(model_formula, net_df)
 }

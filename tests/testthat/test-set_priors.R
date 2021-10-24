@@ -9,8 +9,8 @@ test_that("Default priors for single group return expected results", {
 
   prior <- set_priors(ergm_formula)
   
-  expect_equal(prior$muPop$mean, rep(0, 1))
-  expect_equal(prior$muPop$cov, diag(100, 1))
+  expect_equal(prior$mu_pop$mean, rep(0, 1))
+  expect_equal(prior$mu_pop$cov, diag(100, 1))
   expect_equal(prior$covMuGroup, NULL)
   expect_equal(prior$covTheta$df, 2)
   expect_equal(prior$covTheta$scale, diag(1))
@@ -28,8 +28,8 @@ test_that("Default priors for multiple groups return expected results", {
   
   prior <- set_priors(ergm_formula, groups)
   
-  expect_equal(prior$muPop$mean, rep(0, 1))
-  expect_equal(prior$muPop$cov, diag(100, 1))
+  expect_equal(prior$mu_pop$mean, rep(0, 1))
+  expect_equal(prior$mu_pop$cov, diag(100, 1))
   expect_equal(prior$covMuGroup$df, 2)
   expect_equal(prior$covMuGroup$scale, diag(1))
   expect_equal(prior$covTheta$df, 2)
@@ -45,10 +45,10 @@ test_that("User-specified priors fail when invalid", {
   
   ergm_formula <- nets ~ edges
   
-  prior <- list(muPop = list(cov = diag(2)))
+  prior <- list(mu_pop = list(cov = diag(2)))
   expect_error(set_priors(ergm_formula, groups, prior))
   
-  prior <- list(muPop = list(mean = c(0, 0)))
+  prior <- list(mu_pop = list(mean = c(0, 0)))
   expect_error(set_priors(ergm_formula, groups, prior))
   
   prior <- list(covTheta = list(df = -1))

@@ -14,7 +14,7 @@
 #'
 #' @export
 summary.multibergm <- function(object,
-                               param = "muPop",
+                               param = "mu",
                                thin = 1L,
                                burn_in = 0L) {
   thin    <- as.integer(thin)
@@ -32,17 +32,17 @@ summary.multibergm <- function(object,
   cat("\n", "Posterior Density Estimate for Model: \ny ~", 
       paste(object$formula[3]), "\n", "\n")
 
-  if (param == "muPop") {
+  if (param == "mu") {
     FFmu   <- mcmcr::as.mcmc(output, start = burn_in + 1, thin = thin)
 
     table1 <- summary(FFmu)$statistics
     rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ")")
     table1 <- matrix(table1, n_terms,
-                     dimnames = list(rnames, names(table1)))
+                     dimnames = list(rnames, colnames(table1)))
 
     table2 <- summary(FFmu)$quantiles
     table2 <- matrix(table2, n_terms,
-                     dimnames = list(rnames, names(table2)))
+                     dimnames = list(rnames, colnames(table2)))
 
     print(table1, digits = 4)
     cat("\n")

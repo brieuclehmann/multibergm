@@ -5,7 +5,7 @@
 #' including MCMC proposal covariance, auxiliary iterations for ERGM simulation,
 #' and number of cores to be used in parallel.
 #'
-#' @param formula An \R \code{\link{formula}} object, of the form
+#' @param ergm_formula An \R \code{\link{formula}} object, of the form
 #'   \code{y ~ <model terms>}, where \code{y} is a
 #'   \code{\link[network]{network}} object or a
 #'   \code{\link[ergm]{network.list}} object.
@@ -36,26 +36,32 @@
 #' @import ergm
 #' @importFrom stats terms
 #' @export
-control_multibergm <- function(formula, 
-                               constraints = ~. ,
-                               proposal    = NULL,
-                               aux_iters   = 1000, 
-                               n_batches   = 1) {
+control_multibergm <- function(ergm_formula,
+                               model_formula = ~ 1,
+                               constraints   = ~ . ,
+                               proposal      = NULL,
+                               aux_iters     = 1000, 
+                               n_batches     = 1) {
 
-  networks <- statnet.common::eval_lhs.formula(formula)
+  networks <- statnet.common::eval_lhs.formula(ergm_formula)
 
   # For compatibility with a single network
   if (is.network(networks))  networks <- list(networks)
 
   if (!is.network(networks[[1]]))
     stop("Input must be a network or list of networks")
-
+  
+  # Get model matrix
+  mod_mat <- get_model_matrix(ergm_formula, model_formula)
+  
   n_nets <- length(networks)
-  n_terms    <- length(attr(terms(formula), "term.labels"))
+  n_terms    <- length(attr(terms(ergm_formula), "term.labels"))
+  n_vars <- ncol(mod_mat)
 
   # Set default settings for proposals unless explicitly specified
   if (is.null(proposal$theta)) proposal$theta <- diag(0.1^2, n_terms)
-  if (is.null(proposal$mu))    proposal$mu    <- diag(0.1^2, n_terms)
+  if (is.null(proposal$mu))    proposal$mu    <- array(diag(0.1^2, n_terms),
+                                                       c(n_terms, n_terms, n_vars))
 
   # Specify network batching for parallelisation
   if (n_batches == 1) {
@@ -66,7 +72,7 @@ control_multibergm <- function(formula,
   }
 
   # Set up ergm parameters
-  model       <- ergm_model(formula, networks[[1]])
+  model       <- ergm_model(ergm_formula, networks[[1]])
   Clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
   MHproposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
                                networks[[1]])
@@ -76,6 +82,7 @@ control_multibergm <- function(formula,
        batches     = batches,
        model       = model,
        Clists      = Clists,
-       MHproposals = MHproposals)
+       MHproposals = MHproposals,
+       mod_mat     = mod_mat)
 
 }

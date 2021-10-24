@@ -10,7 +10,7 @@
 #'
 #' @export
 plot.multibergm <- function(object,
-                            param = "muPop",
+                            param = "mu",
                             burn_in = 0L,
                             thin = 1L){
   thin    <- as.integer(thin)
