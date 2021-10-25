@@ -10,12 +10,13 @@ multibergm(object, ...)
 
 \method{multibergm}{formula}(
   object,
+  model_formula = ~1,
   constraints = ~.,
-  groups = NULL,
   main_iters = 1000L,
-  prior = set_priors(object, groups),
-  init = set_init(object, prior, groups),
-  control = control_multibergm(object, constraints)
+  model_matrix = get_model_matrix(object, model_formula),
+  control = control_multibergm(object, model_formula, constraints),
+  prior = set_priors(object, model_matrix, control),
+  init = set_init(object, prior, model_matrix)
 )
 
 \method{multibergm}{multibergm}(object, main_iters = 1000)
@@ -37,7 +38,8 @@ on the support of the distribution of the networks being simulated.}
 A list containing the following elements:
   \itemize{
     \item \code{networks} - to which the model was fit
-    \item \code{formula} - specifiying the ERGM
+    \item \code{ergm_formula} - specifying the ERGM
+    \item \code{model_formula} - specifying the linear model relating network covariates to ERGM summary statistics
     \item \code{constraints} - used to fix any summary statistics
     \item \code{main_iters} - the number of MCMC iterations used
     \item \code{control} parameters used to fit the model

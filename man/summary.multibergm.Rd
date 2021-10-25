@@ -4,7 +4,7 @@
 \alias{summary.multibergm}
 \title{Summarising multibergm model fits}
 \usage{
-\method{summary}{multibergm}(object, param = "muPop", thin = 1L, burn_in = 0L)
+\method{summary}{multibergm}(object, param = "mu", thin = 1L, burn_in = 0L)
 }
 \arguments{
 \item{object}{A \link{multibergm} object}

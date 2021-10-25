@@ -5,7 +5,8 @@
 \title{Set multibergm MCMC options}
 \usage{
 control_multibergm(
-  formula,
+  ergm_formula,
+  model_formula = ~1,
   constraints = ~.,
   proposal = NULL,
   aux_iters = 1000,
@@ -13,7 +14,7 @@ control_multibergm(
 )
 }
 \arguments{
-\item{formula}{An \R \code{\link{formula}} object, of the form
+\item{ergm_formula}{An \R \code{\link{formula}} object, of the form
 \code{y ~ <model terms>}, where \code{y} is a
 \code{\link[network]{network}} object or a
 \code{\link[ergm]{network.list}} object.}

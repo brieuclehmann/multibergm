@@ -22,17 +22,20 @@ plot.multibergm <- function(object,
   output <- get(param, object$params)
   output <- abind::adrop(unclass(output), 1)
   
-  model_terms <- object$control$model$coef.names
+  ergm_terms <- object$control$model$coef.names
+  model_vars <- colnames(control$mod_mat)
+  n_vars <- length(model_vars)
   n_dim <- length(dim(output))
   dim_names <- vector("list", n_dim)
-  dim_names[[n_dim]] <- model_terms
+  dim_names[[n_dim]] <- ergm_terms
+  dim_names[[n_dim - 1]] <- model_vars
   dimnames(output) <- dim_names
 
-  densityFig <- densityplot(output)
-  traceFig <- traceplot(output)
-  autocorrFig <- autocorrplot(output)
+  density_fig <- densityplot(output)
+  trace_fig <- traceplot(output)
+  autocorr_fig <- autocorrplot(output)
 
-  cowplot::plot_grid(densityFig, traceFig, autocorrFig, nrow=1)
+  cowplot::plot_grid(density_fig, trace_fig, autocorr_fig, nrow=1)
 }
 
 
@@ -40,14 +43,14 @@ plot.multibergm <- function(object,
 #' @importFrom reshape2 melt
 traceplot <- function(output) {
 
-  varNames <- c("Iteration", "Stat")
+  varnames <- c("Iteration", "Var", "Stat")
 
-  trace_df <- melt(output, varnames = varNames, value.name = "Estimate")
+  trace_df <- melt(output, varnames = varnames, value.name = "Estimate")
   trace_df$Iteration <- as.integer(trace_df$Iteration)
 
   ggplot(trace_df, aes(x = Iteration, y = Estimate)) +
     geom_line(colour = "black") +
-    facet_wrap("Stat", ncol = 1, scales = "free_y")
+    facet_wrap(c("Var", "Stat"), ncol = 1, scales = "free_y")
 }
 
 
@@ -55,12 +58,12 @@ traceplot <- function(output) {
 #' @importFrom reshape2 melt
 densityplot <- function(output) {
 
-  varNames <- c("Iteration", "Stat")
-  out_df <- melt(output, varnames = varNames, value.name = "Estimate")
+  varnames <- c("Iteration", "Var", "Stat")
+  out_df <- melt(output, varnames = varnames, value.name = "Estimate")
 
   ggplot(out_df, aes(x = Estimate)) +
     geom_density(fill = "black", alpha = 0.5, colour = NA) +
-    facet_wrap("Stat", ncol = 1, scales = "free") +
+    facet_wrap(c("Var", "Stat"), ncol = 1, scales = "free") +
     ylab("Density")
 }
 
@@ -69,8 +72,8 @@ densityplot <- function(output) {
 #' @importFrom stats acf
 groupDensityplot <- function(output) {
 
-  varNames <- c("Iteration", "Group", "Stat")
-  out_df <- melt(output, varnames = varNames, value.name = "Estimate")
+  varnames <- c("Iteration", "Group", "Stat")
+  out_df <- melt(output, varnames = varnames, value.name = "Estimate")
   out_df$Group <- factor(out_df$Group)
 
   ggplot(out_df, aes(x = Estimate)) +
@@ -85,13 +88,13 @@ groupDensityplot <- function(output) {
 autocorrplot <- function(output, lag.max = 40) {
 
   # Get autocorrelation for each model term
-  autocorr <- apply(output, 2, function(x) acf(x, lag.max=lag.max, plot=F)$acf)
+  autocorr <- apply(output, c(2, 3), function(x) acf(x, lag.max=lag.max, plot=F)$acf)
 
-  varNames <- c("Lag", "Stat")
-  ac_df <- melt(autocorr, varnames = varNames, value.name = "Autocorrelation")
+  varnames <- c("Lag", "Var", "Stat")
+  ac_df <- melt(autocorr, varnames = varnames, value.name = "Autocorrelation")
   ac_df$Lag <- ac_df$Lag - 1
 
   ggplot(ac_df, aes(x = Lag, y = Autocorrelation)) +
     geom_bar(stat = "identity", width = 0.3) +
-    facet_wrap("Stat", ncol = 1, scales = "free_y")
+    facet_wrap(c("Var", "Stat"), ncol = 1, scales = "free_y")
 }

@@ -5,7 +5,7 @@
 #' @param object A \link{multibergm} object
 #' @param param Multibergm parameter to be summarised
 #' @param thin Amount of thinning to apply to the posterior samples
-#' @param burnIn Amount of burn-in to remove from the start of posterior
+#' @param burn_in Amount of burn-in to remove from the start of posterior
 #'   samples (pre-thinning)
 #'
 #' @return The function computes and prints posterior means and quantiles for
@@ -25,7 +25,9 @@ summary.multibergm <- function(object,
   output  <- get(param, object$params)
   output  <- subset(output, iterations = post_iters)
   
-  model_terms <- object$control$model$coef.names
+  model_vars <- colnames(control$mod_mat)
+  n_vars <- length(model_vars)
+  ergm_terms <- object$control$model$coef.names
   n_terms     <- length(attr(terms(object$formula), "term.labels"))
   n_groups   <- length(unique(object$groups))
 
@@ -36,12 +38,15 @@ summary.multibergm <- function(object,
     FFmu   <- mcmcr::as.mcmc(output, start = burn_in + 1, thin = thin)
 
     table1 <- summary(FFmu)$statistics
-    rnames <- paste0("mu", seq_len(n_terms), " (", model_terms, ")")
-    table1 <- matrix(table1, n_terms,
+    #rnames <- paste0("mu", seq_len(n_terms), " (", ergm_terms, ")")
+    rnames <- paste("mu", 
+                    rep(model_vars, n_terms), 
+                    rep(ergm_terms, each = n_vars), sep = "_")
+    table1 <- matrix(table1, n_terms * n_vars,
                      dimnames = list(rnames, colnames(table1)))
 
     table2 <- summary(FFmu)$quantiles
-    table2 <- matrix(table2, n_terms,
+    table2 <- matrix(table2, n_terms * n_vars,
                      dimnames = list(rnames, colnames(table2)))
 
     print(table1, digits = 4)
