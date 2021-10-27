@@ -13,7 +13,7 @@
 #'
 #' @export
 
-plot.multibergm <- function(object,
+plot.multibergm <- function(x,
                             param = "mu",
                             burn_in = 0L,
                             thin = 1L,
@@ -55,7 +55,7 @@ plot.multibergm <- function(object,
 #' @importFrom reshape2 melt
 traceplot <- function(output) {
   
-  varnames <- c("iteration", "var", "stat")
+  var_names <- c("iteration", "var", "stat")
   trace_df <- melt(output, varnames = var_names, value.name = "estimate")
   trace_df$iteration <- as.integer(trace_df$iteration)
   p <- ggplot(trace_df, aes(x = .data$iteration, y = .data$estimate)) +
@@ -130,13 +130,12 @@ group_autocorrplot <- function(output, lagmax) {
   
   # Get autocorrelation for each model term
   autocorr <- apply(output, c(2, 3),
-                    function(x) acf(x, lag.max=lag.max, plot=F)$acf)
+                    function(x) acf(x, lag.max=lagmax, plot=F)$acf)
 
-  varnames <- c("lag", "var", "stat")
-  ac_df <- melt(autocorr, varnames = varnames, value.name = "autocorrelation")
-  ac_df$Lag <- ac_df$Lag - 1
+  ac_df <- melt(autocorr, varnames = var_names, value.name = "autocorrelation")
+  ac_df$lag <- ac_df$lag - 1
 
-  ggplot(ac_df, aes(x = Lag, y = Autocorrelation)) +
+  ggplot(ac_df, aes(x = lag, y = autocorrelation)) +
     geom_bar(stat = "identity", width = 0.3) +
     facet_wrap(c("var", "stat"), ncol = 1, scales = "free_y")
 }

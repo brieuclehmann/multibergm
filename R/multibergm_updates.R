@@ -83,9 +83,7 @@ single_var_update <- function(curr, prior, groups, proposals, control) {
 #' @return A list of the updated values of the model parameters and the
 #'   acceptance counts for the exchange updates.
 #' @importFrom mvtnorm rmvnorm
-asis_update <- function(curr, prior, model_matrix, control) {
-  
-  proposal   <- control$proposal
+asis_update <- function(curr, prior, model_matrix, proposals, control) {
   
   # Preallocate parameter values for next iteration
   nxt     <- curr
@@ -98,7 +96,12 @@ asis_update <- function(curr, prior, model_matrix, control) {
                               prior$cov_theta$scale)
   
   # Update network-level mean parameters in centered parameterisation
-  theta_prop  <- rmvnorm(dim(curr$theta)[1], sigma=proposal$theta) + curr$theta
+  theta_prop <- array(NA, dim(curr$theta))
+  for (i in 1:nrow(curr$theta)) {
+    this_proposal <- as.matrix(proposals$theta[i,,])
+    theta_prop[i,] <- rmvnorm(1, curr$theta[i,], sigma = this_proposal)
+  }
+  #theta_prop  <- rmvnorm(dim(curr$theta)[1], sigma=proposal$theta) + curr$theta
   coefs       <- theta_prop + (model_matrix %*% curr$mu)
   delta_theta <- ergm_wrapper(coefs, control)
   theta_mean_curr <- model_matrix %*% curr$mu
@@ -106,7 +109,8 @@ asis_update <- function(curr, prior, model_matrix, control) {
                                     theta_prop,
                                     array(0, dim(curr$theta)),
                                     delta_theta,
-                                    nxt$cov_theta)
+                                    nxt$cov_theta,
+                                    control$etamap)
   
   # Update population-level mean parameter in centered parameterisation
   #mu_curr <- theta_mid + theta_mean_curr
@@ -123,8 +127,10 @@ asis_update <- function(curr, prior, model_matrix, control) {
   # Update population-level parameters in non-centered parameterisation
   mu_prop <- mu_mid
   for (j in seq(nrow(curr$mu))) {
-    mu_prop[j, ] <- mu_prop[j, ] + rmvnorm(1, sigma = as.matrix(proposal$mu[ , ,j]))
+    this_proposal <- as.matrix(proposals$mu[j,,])
+    mu_prop[j, ] <- mu_prop[j, ] + rmvnorm(1, sigma = this_proposal)
   }
+
   coefs <- nxt$theta + (model_matrix %*% mu_prop)
   delta_mu   <- ergm_wrapper(coefs, control)
   nxt$mu <- exchange_update_ncp(mu_mid,

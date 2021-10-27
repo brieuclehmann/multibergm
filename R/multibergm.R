@@ -86,6 +86,11 @@ multibergm.formula <- function(object,
     on.exit(parallel::stopCluster(cl))
   }
 
+  # Preallocate acceptance counts for MCMC
+  n_vars <- nrow(model_matrix)
+  accepts <- list(theta = array(0, c(main_iters, n_networks)),
+                  mu = array(0, c(main_iters, n_vars)))
+  
   # Preallocate and initialise variables for MCMC
   first_iter <- dim(init$theta)[1] + 1
 
@@ -95,17 +100,10 @@ multibergm.formula <- function(object,
   proposals <- list(theta = control$init_proposals$theta,
                     theta_scale = rep(0, n_networks),
                     mu       = control$init_proposals$mu,
-                    mu_scale = rep(0, n_groups))
-
-  # Preallocate acceptance counts for MCMC
-  n_vars <- nrow(model_matrix)
-  accepts <- list(theta = array(0, c(main_iters, n_networks)),
-                  mu = array(0, c(main_iters, n_vars)))
+                    mu_scale = rep(0, n_vars))
 
   pb <- txtProgressBar(min = 0, max = main_iters, style = 3)
 
-
-  
   # Run the MCMC
   for (k in seq(first_iter, main_iters)) {
     setTxtProgressBar(pb, k)
@@ -114,7 +112,7 @@ multibergm.formula <- function(object,
     curr <- lapply(curr, function(x) abind::adrop(unclass(x), c(1, 2)))
 
     # Perform Gibbs update for all variables
-    mcmc_update <- asis_update(curr, prior, model_matrix, control)
+    mcmc_update <- asis_update(curr, prior, model_matrix, proposals, control)
     #if (n_vars == 1) {
     #  mcmc_update <- single_var_update(curr, prior, model_matrix, control)
     #} else {

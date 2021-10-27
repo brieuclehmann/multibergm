@@ -62,20 +62,13 @@ control_multibergm <- function(ergm_formula,
   n_nets <- length(networks)
   
   # Set up ergm parameters
-  model       <- ergm_model(formula, networks[[1]])
+  model       <- ergm_model(ergm_formula, networks[[1]])
   clists      <- lapply(networks, function(x) ergm.Cprepare(x, model))
   mh_proposals <- ergm_proposal(constraints, control.ergm()$MCMC.prop.args,
                                 networks[[1]])
   n_terms    <- nparam(model)
   n_vars     <- ncol(mod_mat)
   etamap     <- ergm.etamap(model)
-  
-  if (is.null(groups)) {
-    n_groups <- 1
-  } else {
-    n_groups <- length(unique(groups))
-  }
-  
   
   # Set default settings for proposals unless explicitly specified
   if (is.null(init_proposals$theta)) {
@@ -87,8 +80,8 @@ control_multibergm <- function(ergm_formula,
   
   #TODO: FIX THIS
   if (is.null(init_proposals$mu)) {
-    init_proposals$mu    <- array(NA, c(n_groups, n_terms, n_terms))
-      for (i in 1:n_groups) {
+    init_proposals$mu    <- array(NA, c(n_vars, n_terms, n_terms))
+      for (i in 1:n_vars) {
         init_proposals$mu[i, , ] <- diag(0.1^2, n_terms)
       }
   }
@@ -114,8 +107,8 @@ control_multibergm <- function(ergm_formula,
        proposal_rescale     = proposal_rescale,
        batches     = batches,
        model       = model,
-       Clists      = Clists,
-       MHproposals = MHproposals,
+       clists      = clists,
+       mh_proposals = mh_proposals,
        mod_mat     = mod_mat,
        etamap               = etamap)
 
