@@ -70,17 +70,13 @@ traceplot <- function(output) {
 #' @importFrom reshape2 melt
 densityplot <- function(output, param) {
   
-  if (length(dim(output)) == 3) {
-    p <- group_densityplot(output)
-  } else {
-    var_names <- c("iteration", "var", "stat")
-    out_df <- melt(output, varnames = var_names, value.name = "estimate")
-    p <- ggplot(out_df, aes(x = .data$estimate)) +
-      geom_density(fill = "black", alpha = 0.5, colour = NA) +
-      facet_wrap(c("var", "stat"), ncol = 1, scales = "free") +
-      ylab("density")
-  }
-
+  var_names <- c("iteration", "var", "stat")
+  out_df <- melt(output, varnames = var_names, value.name = "estimate")
+  p <- ggplot(out_df, aes(x = .data$estimate)) +
+    geom_density(fill = "black", alpha = 0.5, colour = NA) +
+    facet_wrap(c("var", "stat"), ncol = 1, scales = "free") +
+    ylab("density")
+  
   p 
 }
 
