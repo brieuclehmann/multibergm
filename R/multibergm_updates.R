@@ -90,10 +90,13 @@ asis_update <- function(curr, prior, model_matrix, proposals, control) {
   accepts <- list()
   
   # First, update network-level covariance parameter
-  nxt$cov_theta <- cov_update(curr$theta,
-                              array(0, dim(curr$theta)),
-                              prior$cov_theta$df,
-                              prior$cov_theta$scale)
+  nxt$cov_theta <- cov_mv_update(curr$theta,
+                                 array(0, dim(curr$theta)),
+                                 prior$cov_theta$df,
+                                 prior$cov_theta$scale,
+                                 curr$mu,
+                                 prior$mu$mean,
+                                 solve(prior$mu$cov))
   
   # Update network-level mean parameters in centered parameterisation
   theta_prop <- array(NA, dim(curr$theta))

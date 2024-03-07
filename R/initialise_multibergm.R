@@ -26,13 +26,13 @@ set_init <- function(formula, prior, model_matrix, init = list()){
   if (is.null(init$theta))
     init$theta      <- rmvnorm(n_networks, sigma = init$cov_theta)
   
-  if (!is.null(prior$cov_mu$df)) {
-    if (is.null(init$cov_mu))
-      init$cov_mu <- riwish(prior$cov_mu$df, prior$cov_mu$scale)
-    
-    if (is.null(init$muGroup))
-      init$muGroup    <- rmvnorm(n_groups, init$mu, init$cov_mu)
-  }
+  # if (!is.null(prior$cov_mu$df)) {
+  #   if (is.null(init$cov_mu))
+  #     init$cov_mu <- riwish(prior$cov_mu$df, prior$cov_mu$scale)
+  #   
+  #   if (is.null(init$muGroup))
+  #     init$muGroup    <- rmvnorm(n_groups, init$mu, init$cov_mu)
+  # }
 
   mcmcr::as.mcmcr(init)
 }

@@ -20,7 +20,6 @@
 set_priors <- function(ergm_formula,
                        model_matrix,
                        control,
-                       hyper_model_matrix = NULL,
                        prior = list()) {
 
   n_terms <- length(attr(terms(ergm_formula), "term.labels"))
@@ -44,16 +43,16 @@ set_priors <- function(ergm_formula,
   if (is.null(prior$cov_theta$scale))
     prior$cov_theta$scale <- diag(n_terms)
 
-  if (!is.null(hyper_model_matrix)) {
-    # Set priors for group-level covariance parameter
-    #TODO: figure this out...
-    n_hyper <- ncol(hyper_model_matrix)
-    if (is.null(prior$cov_mu$df))
-      prior$cov_mu$df <- rep(n_terms + 1, n_hyper)
-
-    if (is.null(prior$cov_mu$scale))
-      prior$cov_mu$scale <- array(diag(n_terms), c(n_terms, n_terms, n_hyper))
-  }
+  # if (!is.null(hyper_model_matrix)) {
+  #   # Set priors for group-level covariance parameter
+  #   #TODO: figure this out...
+  #   n_hyper <- ncol(hyper_model_matrix)
+  #   if (is.null(prior$cov_mu$df))
+  #     prior$cov_mu$df <- rep(n_terms + 1, n_hyper)
+  # 
+  #   if (is.null(prior$cov_mu$scale))
+  #     prior$cov_mu$scale <- array(diag(n_terms), c(n_terms, n_terms, n_hyper))
+  # }
 
   #check_prior(prior, n_terms, n_groups)
 

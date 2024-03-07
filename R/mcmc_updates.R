@@ -141,9 +141,8 @@ mean_update <- function(obs_data, obs_cov, prior_mean, prior_cov, model_matrix) 
 }
 
 #' @param prior_df Prior degrees of freedom in Inverse-Wishart
-#' @param prior_obs_scale Prior scale matrix in Inverse-Wishart
+#' @param prior_scale Prior scale matrix in Inverse-Wishart
 #' @param var_mean Fixed (known) mean of parameters
-#' @param labels Labels to associate each observation with a grouping
 #' @param curr_cov Current value of covariance parameter
 #'
 #' @describeIn mcmc_updates Gibbs update of a covariance parameter
@@ -152,9 +151,8 @@ mean_update <- function(obs_data, obs_cov, prior_mean, prior_cov, model_matrix) 
 
 cov_update <- function(obs_data, # Y - XB
                        obs_mean, 
-                       prior_df, # nu
+                       prior_df, # nu_0
                        prior_scale,
-                       labels = rep(1, nrow(obs_data)),
                        curr_cov = NULL) {
 
   #if (all(prior_obs_scale == 0)) {
@@ -180,6 +178,51 @@ cov_update <- function(obs_data, # Y - XB
   post_df    <- prior_df + n
   post_scale <- prior_scale + pairwise_dev
 
+  riwish(post_df, post_scale)
+}
+
+#' @param prior_df Prior degrees of freedom in Inverse-Wishart
+#' @param prior_scale Prior scale matrix in Inverse-Wishart
+#' @param var_mean Fixed (known) mean of parameters
+#' @param curr_cov Current value of covariance parameter
+#'
+#' @describeIn mcmc_updates Gibbs update of a covariance parameter
+#'
+#' @importFrom MCMCpack riwish
+
+cov_mv_update <- function(obs_data, # Y - XB
+                          obs_mean, 
+                          prior_df, # nu_0
+                          prior_scale,
+                          curr_mu,
+                          mu_prior_mean,
+                          mu_prior_scale) {
+  
+  #if (all(prior_obs_scale == 0)) {
+  #  return(curr_cov)
+  #}
+  
+  n <- nrow(obs_data)
+  
+  if (!is.matrix(obs_mean))
+    obs_mean <- matrix(obs_mean, nrow = 1)
+  
+  data_centered <- obs_data - obs_mean
+  mu_centered <- curr_mu - mu_prior_mean
+  
+  pairwise_dev <- t(data_centered) %*% data_centered
+  mu_dev <- t(mu_centered) %*% mu_prior_scale %*% mu_centered
+  
+  #pairwise_dev <- 0
+  #for (g in seq_len(nrow(obs_mean))) {
+  #  ind <- which(labels == g)
+  #  pairwise_dev <- pairwise_dev + crossprod(sweep(obs_data[ind, , drop = F],
+  #                                               2, obs_mean[g, ]))
+  #}
+  
+  post_df    <- prior_df + n
+  post_scale <- prior_scale + pairwise_dev + mu_dev
+  
   riwish(post_df, post_scale)
 }
 
