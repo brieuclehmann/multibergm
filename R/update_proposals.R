@@ -36,30 +36,42 @@ update_proposals <- function(proposals, accept_rate, params, control) {
   }
   
   # Update mu proposals
-  n_groups <- dim(proposals$mu)[1]
-  if (n_groups == 1) {
-    if (accept_rate$mu[1] > 0.3) {
-      proposals$mu_scale[1] <- proposals$mu_scale[1] + delta_scale
+  n_vars <- ncol(control$mod_mat)
+  for (i in 1:n_vars) {
+    if (accept_rate$mu[i] > 0.3) {
+      proposals$mu_scale[i] <- proposals$mu_scale[i] + delta_scale
     } else {
-      proposals$mu_scale[1] <- proposals$mu_scale[1] - delta_scale
+      proposals$mu_scale[i] <- proposals$mu_scale[i] - delta_scale
     }
-    this_sample <- as.matrix(params$mu_pop[1, , ])
+    this_sample <- as.matrix(params$mu[1, ,i, ])
     posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
     regular_cov <- ((beta * 0.1) ^ 2) * diag(n_stats) / n_stats
-    proposals$mu[1,,] <- exp(proposals$mu_scale[1]) * (posterior_cov + regular_cov)
-  } else {
-    for (i in 1:n_groups) {
-      if (accept_rate$mu[i] > 0.3) {
-        proposals$mu_scale[i] <- proposals$mu_scale[i] + delta_scale
-      } else {
-        proposals$mu_scale[i] <- proposals$mu_scale[i] - delta_scale
-      }
-      this_sample <- as.matrix(params$mu_group[1, ,i, ])
-      posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
-      regular_cov <- ((beta * 0.1) ^ 2) * diag(n_stats) / n_stats
-      proposals$mu[i,,] <- exp(proposals$mu_scale[i]) * (posterior_cov + regular_cov)
-    }
+    proposals$mu[i,,] <- exp(proposals$mu_scale[i]) * (posterior_cov + regular_cov)
   }
+  
+  # if (n_groups == 1) {
+  #   if (accept_rate$mu[1] > 0.3) {
+  #     proposals$mu_scale[1] <- proposals$mu_scale[1] + delta_scale
+  #   } else {
+  #     proposals$mu_scale[1] <- proposals$mu_scale[1] - delta_scale
+  #   }
+  #   this_sample <- as.matrix(params$mu_pop[1, , ])
+  #   posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
+  #   regular_cov <- ((beta * 0.1) ^ 2) * diag(n_stats) / n_stats
+  #   proposals$mu[1,,] <- exp(proposals$mu_scale[1]) * (posterior_cov + regular_cov)
+  # } else {
+  #   for (i in 1:n_groups) {
+  #     if (accept_rate$mu[i] > 0.3) {
+  #       proposals$mu_scale[i] <- proposals$mu_scale[i] + delta_scale
+  #     } else {
+  #       proposals$mu_scale[i] <- proposals$mu_scale[i] - delta_scale
+  #     }
+  #     this_sample <- as.matrix(params$mu_group[1, ,i, ])
+  #     posterior_cov <- (((1 - beta) * 2.38) ^ 2) * cov(this_sample) / n_stats
+  #     regular_cov <- ((beta * 0.1) ^ 2) * diag(n_stats) / n_stats
+  #     proposals$mu[i,,] <- exp(proposals$mu_scale[i]) * (posterior_cov + regular_cov)
+  #   }
+  # }
   
   proposals
 }

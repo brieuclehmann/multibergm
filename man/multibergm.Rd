@@ -10,12 +10,13 @@ multibergm(object, ...)
 
 \method{multibergm}{formula}(
   object,
+  model_formula = ~1,
   constraints = ~.,
-  groups = NULL,
   main_iters = 1000L,
-  prior = set_priors(object, control, groups),
-  init = set_init(object, prior, groups),
-  control = control_multibergm(object, constraints, groups),
+  model_matrix = get_model_matrix(object, model_formula),
+  control = control_multibergm(object, model_matrix, constraints),
+  prior = set_priors(object, model_matrix, control),
+  init = set_init(object, prior, model_matrix),
   ...
 )
 
@@ -32,21 +33,22 @@ of the form \code{y ~ <model terms>}, where \code{y} is a
 \item{constraints}{A one-sided formula specifying one or more constraints
 on the support of the distribution of the networks being simulated.}
 
-\item{groups}{A vector of group memberships}
-
 \item{main_iters}{Number of (outer) MCMC iterations}
+
+\item{control}{A list of parameters set by \code{\link{control_multibergm}}}
 
 \item{prior}{A list of explicit prior specifications.}
 
 \item{init}{A list of initial values.}
 
-\item{control}{A list of parameters set by \code{\link{control_multibergm}}}
+\item{groups}{A vector of group memberships}
 }
 \value{
 A list containing the following elements:
   \itemize{
     \item \code{networks} - to which the model was fit
-    \item \code{formula} - specifiying the ERGM
+    \item \code{ergm_formula} - specifying the ERGM
+    \item \code{model_formula} - specifying the linear model relating network covariates to ERGM summary statistics
     \item \code{constraints} - used to fix any summary statistics
     \item \code{main_iters} - the number of MCMC iterations used
     \item \code{control} parameters used to fit the model

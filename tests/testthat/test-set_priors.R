@@ -14,6 +14,7 @@ test_that("Default priors for single group return expected results", {
   expect_equal(prior$cov_mu_group, NULL)
   expect_equal(prior$cov_theta$df, 2)
   expect_equal(prior$cov_theta$scale, diag(1))
+
 })
 
 test_that("Default priors for multiple groups return expected results", {
@@ -35,6 +36,7 @@ test_that("Default priors for multiple groups return expected results", {
   expect_equal(prior$cov_mu_group$scale, diag(1))
   expect_equal(prior$cov_theta$df, 2)
   expect_equal(prior$cov_theta$scale, diag(1))
+
 })
 
 test_that("User-specified priors fail when invalid", {
